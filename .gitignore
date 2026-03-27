@@ -54,7 +54,7 @@ logs/
 Thumbs.db
 desktop.ini
 
-# ── Editor / IDE ──────────────────────────────────────────────────
+# ── Editor / IDE / AI ─────────────────────────────────────────────
 .vscode/
 .idea/
 *.swp
@@ -62,6 +62,7 @@ desktop.ini
 *.sublime-project
 *.sublime-workspace
 .cursor/
+.claude/
 
 # ── Vite / Build tools ────────────────────────────────────────────
 client/.vite/

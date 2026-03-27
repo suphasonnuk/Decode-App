@@ -17,13 +17,23 @@ app.use(cors({
     if (origin === ALLOWED_ORIGIN) return cb(null, true)
     cb(new Error('CORS: origin not allowed'))
   },
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'x-app-token'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'x-app-token', 'x-user-id'],
   credentials: false,
 }))
 
-app.use(express.json({ limit: '20mb' }))
-app.use(express.urlencoded({ extended: true, limit: '20mb' }))
+app.use(express.json({ limit: '12mb' }))
+app.use(express.urlencoded({ extended: true, limit: '1mb' }))
+
+// ── Request timeout — 60s for all routes ──────────────────────────────────────
+app.use((_req, res, next) => {
+  res.setTimeout(60_000, () => {
+    if (!res.headersSent) {
+      res.status(408).json({ error: 'Request timed out' })
+    }
+  })
+  next()
+})
 
 // ── Fix 7: Health endpoint — strip all infra details ─────────────────────────
 // Public endpoint (no auth). Returns only what the client needs:

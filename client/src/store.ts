@@ -1,33 +1,19 @@
 import type { WeekAnchors, LogPayload, DayOutcome } from './types'
+import {
+  localToday as todayStr,
+  localYesterday as yesterdayStr,
+  localWeekStart as weekStartStr,
+  weekStartForOffset,
+  weekDatesFrom,
+  parseBQDate,
+} from './lib/dates'
 
-// ── Local date helpers (Bangkok UTC+7 safe) ───────────────────────────────────
-function localDateStr(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
-}
-export const todayStr     = (): string => localDateStr(new Date())
-export const yesterdayStr = (): string => { const d=new Date(); d.setDate(d.getDate()-1); return localDateStr(d) }
-export const weekStartStr = (): string => { const d=new Date(); d.setDate(d.getDate()-d.getDay()); return localDateStr(d) }
+// Re-export date utilities for consumers that import from store
+export { todayStr, yesterdayStr, weekStartStr, weekStartForOffset, parseBQDate }
 
-// Week start for any offset (0=current, -1=last week, etc.)
-export const weekStartForOffset = (offset: number): string => {
-  const d = new Date()
-  d.setDate(d.getDate() - d.getDay() + offset * 7)
-  return localDateStr(d)
-}
-
-export const weekDates = (weekStart?: string): string[] => {
-  const base = weekStart ?? weekStartStr()
-  const s = new Date(base + 'T12:00:00')
-  return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(s); d.setDate(s.getDate() + i); return localDateStr(d)
-  })
-}
-
-// Parse BigQuery date — comes back as { value: 'YYYY-MM-DD' } or plain string
-export const parseBQDate = (val: unknown): string =>
-  val && typeof val === 'object' && 'value' in (val as object)
-    ? (val as { value: string }).value
-    : (val as string)
+// weekDates wrapper: accepts optional weekStart, defaults to current week
+export const weekDates = (weekStart?: string): string[] =>
+  weekDatesFrom(weekStart ?? weekStartStr())
 
 // ── localStorage helpers ──────────────────────────────────────────────────────
 function lsSet<T>(key: string, v: T): void { try { localStorage.setItem(key, JSON.stringify(v)) } catch {} }
@@ -208,4 +194,63 @@ export function getProfileCache(): UserProfile {
 
 export function saveProfileCache(p: UserProfile): void {
   try { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)) } catch {}
+}
+
+// ── Smart task defaults — track task selection frequency ──────────────────────
+const FREQ_KEY = 'decode_task_freq'
+
+type TaskFrequency = Record<string, Record<string, number>>
+
+function getTaskFreq(): TaskFrequency {
+  return lsGet<TaskFrequency>(FREQ_KEY) ?? {}
+}
+
+/** Call when user selects a task to bump its frequency count */
+export function bumpTaskFreq(category: string, task: string): void {
+  if (!task) return
+  const freq = getTaskFreq()
+  if (!freq[category]) freq[category] = {}
+  freq[category][task] = (freq[category][task] || 0) + 1
+  lsSet(FREQ_KEY, freq)
+}
+
+/** Returns task options sorted by frequency (most used first), with unselected tasks after */
+export function sortedTaskOptions(category: string, options: readonly string[]): string[] {
+  const freq = getTaskFreq()[category] ?? {}
+  return [...options].sort((a, b) => (freq[b] || 0) - (freq[a] || 0))
+}
+
+// ── Streak freeze — one free pass per week ───────────────────────────────────
+const FREEZE_KEY = 'decode_streak_freeze'
+
+interface FreezeState {
+  available: number   // freezes remaining (max 1)
+  lastRefill: string  // week_start date when last refilled
+  usedOn: string[]    // dates freeze was used
+}
+
+function getFreezeState(): FreezeState {
+  const ws = weekStartStr()
+  const state = lsGet<FreezeState>(FREEZE_KEY) ?? { available: 1, lastRefill: ws, usedOn: [] }
+  // Auto-refill once per week
+  if (state.lastRefill !== ws) {
+    state.available = 1
+    state.lastRefill = ws
+    state.usedOn = []
+    lsSet(FREEZE_KEY, state)
+  }
+  return state
+}
+
+export function getStreakFreezeCount(): number {
+  return getFreezeState().available
+}
+
+export function useStreakFreeze(): boolean {
+  const state = getFreezeState()
+  if (state.available <= 0) return false
+  state.available = 0
+  state.usedOn.push(todayStr())
+  lsSet(FREEZE_KEY, state)
+  return true
 }

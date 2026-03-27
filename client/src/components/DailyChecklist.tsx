@@ -1,4 +1,6 @@
 import type { Tab } from '../types'
+import type { TimePeriod } from '../data/calendar'
+import { getTimePeriod, TIME_PERIOD_LABELS } from '../data/calendar'
 import { getTodayCache, getNightCache, getAnchors } from '../store'
 
 interface Props {
@@ -6,34 +8,11 @@ interface Props {
   onGoTo: (tab: Tab) => void
 }
 
-// ── Time of day: 5 distinct periods ──────────────────────────────────────────
-// Early morning:  05:00 – 08:59  →  chill, just woke up
-// Morning:        09:00 – 11:59  →  normal prompt to log today
-// Afternoon:      12:00 – 17:59  →  mild urgency if today not done
-// Evening:        18:00 – 21:59  →  time to close the day
-// Late night:     22:00 – 04:59  →  urgent if night not done, chill if done
-
-type TimePeriod = 'early_morning' | 'morning' | 'afternoon' | 'evening' | 'late_night'
-
-function getTimePeriod(hour: number): TimePeriod {
-  if (hour >= 5  && hour < 9)  return 'early_morning'
-  if (hour >= 9  && hour < 12) return 'morning'
-  if (hour >= 12 && hour < 18) return 'afternoon'
-  if (hour >= 18 && hour < 22) return 'evening'
-  return 'late_night'                               // 22:00 – 04:59
-}
-
-// ── Day of week ───────────────────────────────────────────────────────────────
-// 0 = Sunday, 1 = Monday … 6 = Saturday
-function getDayOfWeek(): number {
-  return new Date().getDay()
-}
-
 // ── Status snapshot ───────────────────────────────────────────────────────────
 function getDailyStatus() {
   const now   = new Date()
   const hour  = now.getHours()
-  const dow   = getDayOfWeek()
+  const dow   = new Date().getDay()
   const period= getTimePeriod(hour)
 
   const day   = getTodayCache()
@@ -282,12 +261,12 @@ function getHeaderMessage(s: ReturnType<typeof getDailyStatus>, pct: number) {
 
 // ── Urgency styles ────────────────────────────────────────────────────────────
 const URGENCY_BADGE_STYLE: Record<string, { bg: string; color: string }> = {
-  chill:   { bg: 'rgba(79,195,247,0.12)',   color: 'var(--work)'    },
-  normal:  { bg: 'rgba(255,213,79,0.15)',   color: 'var(--accent)'  },
-  urgent:  { bg: 'rgba(255,183,77,0.2)',    color: 'var(--partial)' },
-  overdue: { bg: 'rgba(239,83,80,0.18)',    color: 'var(--miss)'    },
-  none:    { bg: 'rgba(255,255,255,0.06)',  color: 'var(--muted2)'  },
-  Tonight: { bg: 'rgba(165,214,167,0.1)',   color: 'var(--body)'    },
+  chill:   { bg: 'oklch(72% 0.12 220 / 0.12)',  color: 'var(--work)'    },
+  normal:  { bg: 'oklch(82% 0.14 85 / 0.15)',   color: 'var(--accent)'  },
+  urgent:  { bg: 'oklch(76% 0.14 60 / 0.2)',    color: 'var(--partial)' },
+  overdue: { bg: 'oklch(62% 0.20 25 / 0.18)',   color: 'var(--miss)'    },
+  none:    { bg: 'oklch(95% 0.008 75 / 0.06)',  color: 'var(--muted2)'  },
+  Tonight: { bg: 'oklch(76% 0.12 150 / 0.1)',   color: 'var(--body)'    },
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -314,13 +293,7 @@ export default function DailyChecklist({ onClose, onGoTo }: Props) {
   const now  = new Date()
   const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
   const dayStr  = now.toLocaleDateString('en-US', { weekday: 'long' })
-  const periodLabel: Record<string, string> = {
-    early_morning: 'Early morning',
-    morning:       'Morning',
-    afternoon:     'Afternoon',
-    evening:       'Evening',
-    late_night:    'Late night',
-  }
+  const periodLabel = TIME_PERIOD_LABELS
 
   return (
     <div className="checklist-overlay" onClick={onClose}>

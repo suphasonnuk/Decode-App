@@ -23,6 +23,8 @@ import Coffee          from './components/Coffee'
 import AchievementPopup from './components/AchievementPopup'
 import ChallengePopup, { shouldShowChallengePopup } from './components/ChallengePopup'
 import FriendsPanel from './components/FriendsPanel'
+import QuickLog from './components/QuickLog'
+import ErrorBoundary from './components/ErrorBoundary'
 
 type AppTab = Tab | 'dashboard' | 'help' | 'coach' | 'nutrition' | 'coffee'
 
@@ -101,6 +103,7 @@ function AppInner() {
   const [dashKey,       setDashKey]      = useState(0)
   const [dayKey,        setDayKey]       = useState(0)   // increments at midnight, remounts daily components
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const touchStart = useRef<{ x: number; y: number } | null>(null)
 
   const userId = getUserId()
 
@@ -215,6 +218,22 @@ function AppInner() {
     if (!isErr) setTimeout(() => setDashKey(k => k + 1), 500)
   }
 
+  const handleSwipeStart = (e: React.TouchEvent) => {
+    touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+  }
+  const handleSwipeEnd = (e: React.TouchEvent) => {
+    if (!touchStart.current) return
+    const dx = e.changedTouches[0].clientX - touchStart.current.x
+    const dy = e.changedTouches[0].clientY - touchStart.current.y
+    touchStart.current = null
+    if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx)) return // too short or vertical
+    const ids = TABS_PRIMARY.map(t => t.id)
+    const idx = ids.indexOf(tab)
+    if (idx < 0) return
+    if (dx < 0 && idx < ids.length - 1) handleTabChange(ids[idx + 1])
+    else if (dx > 0 && idx > 0) handleTabChange(ids[idx - 1])
+  }
+
   const handleTabChange = (t: AppTab) => {
     if (t === tab || transitioning) return
     if (timer.current) clearTimeout(timer.current)
@@ -265,7 +284,11 @@ function AppInner() {
           </div>
         </div>
 
-        <div className={`tab-content ${transitioning ? 'tab-exit' : 'tab-enter'}`}>
+        <div
+          className={`tab-content ${transitioning ? 'tab-exit' : 'tab-enter'}`}
+          onTouchStart={handleSwipeStart}
+          onTouchEnd={handleSwipeEnd}
+        >
           {tab === 'dashboard' && <Dashboard key={`${dashKey}-${dayKey}`} onTabChange={t => handleTabChange(t as AppTab)} onNewAchievement={a => setPendingAch(a)} />}
           {tab === 'daily'     && <Today   onToast={showToast} />}
           {tab === 'night'     && <Night   onToast={showToast} />}
@@ -316,6 +339,9 @@ function AppInner() {
         {toast.isErr ? '⚠️ ' : '✓ '}{toast.msg}
       </div>
 
+      {/* ── Quick Log FAB ── */}
+      <QuickLog onToast={showToast} />
+
       {/* ── Friends floating button ── */}
       <button
         className="friends-fab"
@@ -347,8 +373,10 @@ function AppInner() {
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AppInner />
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AppInner />
+      </QueryClientProvider>
+    </ErrorBoundary>
   )
 }

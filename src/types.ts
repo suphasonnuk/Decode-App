@@ -70,10 +70,7 @@ export interface AnchorWeekResponse {
 
 export interface HealthResponse {
   status: 'ok'
-  project: string
-  dataset: string
-  table: string
-  env: string
+  auth: boolean
 }
 
 // ── User profile ──────────────────────────────────────────────────────────────

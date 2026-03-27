@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Achievement } from '../achievements'
+import Confetti from './Confetti'
+import { hapticHeavy } from '../lib/haptics'
 
 interface Props {
   achievement: Achievement
@@ -8,17 +10,17 @@ interface Props {
 
 export default function AchievementPopup({ achievement, onDone }: Props) {
   const [visible, setVisible] = useState(false)
+  const [showConfetti, setShowConfetti] = useState(false)
 
   useEffect(() => {
-    // Slight delay so it feels surprising
-    const t1 = setTimeout(() => setVisible(true), 100)
-    // Auto-dismiss after 4s
+    const t1 = setTimeout(() => { setVisible(true); setShowConfetti(true); hapticHeavy() }, 100)
     const t2 = setTimeout(() => { setVisible(false); setTimeout(onDone, 400) }, 4000)
     return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [])
 
   return (
     <div className={`achievement-overlay ${visible ? 'achievement-visible' : ''}`}>
+      {showConfetti && <Confetti onDone={() => setShowConfetti(false)} />}
       <div className="achievement-popup">
         <div className="achievement-shine" />
         <div className="achievement-emoji">{achievement.emoji}</div>

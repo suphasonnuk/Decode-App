@@ -3,6 +3,8 @@ import type { DayOutcome, LogPayload } from '../types'
 import { OUTCOME_CONFIGS, NIGHT_SLIDER_CONFIGS, getSliderLabel } from '../data'
 import { todayStr, weekStartStr, getAnchors, getTodayCache, getNightCache, saveNightCache, saveTodayCache } from '../store'
 import { api } from '../api'
+import Confetti from './Confetti'
+import { hapticMedium, hapticSuccess } from '../lib/haptics'
 
 interface Props { onToast: (msg: string, err?: boolean) => void }
 
@@ -17,6 +19,7 @@ export default function Night({ onToast }: Props) {
   const [errors,     setErrors]     = useState({ outcome: false, tomorrow: false })
   const [loading,      setLoading]      = useState(false)
   const [saved,        setSaved]        = useState(false)
+  const [showConfetti, setShowConfetti] = useState(false)
   const [alreadySaved, setAlreadySaved] = useState(false)  // true = BQ has today's night log
   const [todayFilled, setTodayFilled] = useState<boolean>(
     !!(getTodayCache().work_task && getTodayCache().future_task && getTodayCache().body_task)
@@ -84,7 +87,7 @@ export default function Night({ onToast }: Props) {
     setLoading(true)
     try {
       const res = await api.saveLog(payload)
-      if (res.success) { setSaved(true); onToast('Day closed & saved ✓') }
+      if (res.success) { setSaved(true); hapticSuccess(); onToast('Day closed & saved ✓') }
       else onToast('Error: ' + (res.error ?? 'Unknown'), true)
     } catch (err) {
       onToast('Error: ' + (err instanceof Error ? err.message : 'Unknown'), true)
@@ -93,9 +96,10 @@ export default function Night({ onToast }: Props) {
 
   return (
     <div>
+      {showConfetti && <Confetti onDone={() => setShowConfetti(false)} />}
       <div className="page-intro">
         <div className="page-intro-title">Close the Day</div>
-        <div className="page-intro-sub">Takes about 5 minutes — do this before sleep</div>
+        <div className="page-intro-sub">Quick reflection before sleep</div>
       </div>
 
       {/* ── Already saved banner ── */}
@@ -118,14 +122,21 @@ export default function Night({ onToast }: Props) {
 
       {/* Step 1 — Outcome */}
       <div className="card">
-        <div className="card-label">Step 1 — How was today? <span className="req">*</span></div>
+        <div className="card-label">How was today? <span className="req">*</span></div>
         <div className="outcome-cards">
           {OUTCOME_CONFIGS.map(o => (
             <button
               key={o.id}
               className={`outcome-card ${outcome === o.id ? 'outcome-card-active' : ''} ${errors.outcome ? 'outcome-card-error' : ''}${alreadySaved ? ' outcome-card-locked' : ''}`}
               style={{ '--outcome-color': o.color } as React.CSSProperties}
-              onClick={() => { if (!alreadySaved) { setOutcome(o.id); setErrors(p => ({ ...p, outcome: false })); setSaved(false) } }}
+              onClick={() => {
+                if (alreadySaved) return
+                setOutcome(o.id)
+                setErrors(p => ({ ...p, outcome: false }))
+                setSaved(false)
+                hapticMedium()
+                if (o.id === 'win') setShowConfetti(true)
+              }}
               disabled={alreadySaved}
             >
               <span className="outcome-card-emoji">{o.emoji}</span>
@@ -139,7 +150,7 @@ export default function Night({ onToast }: Props) {
 
       {/* Step 2 — Focus & Mood sliders */}
       <div className="card">
-        <div className="card-label">Step 2 — Rate Your Day</div>
+        <div className="card-label">Rate Your Day</div>
         {NIGHT_SLIDER_CONFIGS.map(cfg => {
           const val = cfg.key === 'focus' ? focus : mood
           const set = cfg.key === 'focus' ? setFocus : setMood
@@ -172,7 +183,7 @@ export default function Night({ onToast }: Props) {
 
       {/* Step 3 — Tomorrow's plan */}
       <div className="card">
-        <div className="card-label">Step 3 — Plan Tomorrow <span className="req">*</span></div>
+        <div className="card-label">Plan Tomorrow <span className="req">*</span></div>
         <p className="field-hint">Write your very first action tomorrow morning. Be specific — this will appear at the top of your TODAY tab tomorrow.</p>
         <textarea
           className={`field-textarea ${errors.tomorrow ? 'field-textarea-error' : ''}`}
@@ -186,7 +197,7 @@ export default function Night({ onToast }: Props) {
 
       {/* Step 4 — Reflection (optional) */}
       <div className="card">
-        <div className="card-label">Step 4 — Reflection <span className="optional-badge">optional</span></div>
+        <div className="card-label">Reflection <span className="optional-badge">optional</span></div>
         <p className="field-hint">2–3 sentences max. What happened? Any insight? Saved to BigQuery as your personal journal.</p>
         <textarea
           className="field-textarea"

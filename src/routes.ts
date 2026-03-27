@@ -62,15 +62,26 @@ setInterval(() => {
 // All data endpoints require user_id. The client sends it via x-user-id header
 // (for GET requests) or in the request body (for POST requests).
 // user_id is a UUID generated once per device — it scopes all BigQuery rows.
+// UUID v4 pattern (loose — accepts any hex UUID shape)
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 function getUserId(req: Request): string | null {
   const fromHeader = req.headers['x-user-id'] as string | undefined
   const fromBody   = req.body?.user_id        as string | undefined
   const fromQuery  = req.query.user_id        as string | undefined
-  const raw = fromHeader || fromBody || fromQuery || ''
+  const raw = (fromHeader || fromBody || fromQuery || '').trim()
   if (!raw) return null
-  // Validate UUID format (loose check) — prevents injection via user_id itself
-  const cleaned = safeStr(raw, 100)
-  return cleaned || null
+  // Strict UUID validation — prevents injection via user_id
+  if (!UUID_RE.test(raw)) return null
+  return raw
+}
+
+// Clamp a numeric value to a valid 1–10 range for slider fields
+function clampLevel(val: unknown): number | null {
+  if (val == null) return null
+  const n = Number(val)
+  if (isNaN(n)) return null
+  return Math.max(1, Math.min(10, Math.round(n)))
 }
 
 // ── Fix 3: Auth middleware — timing-safe token comparison ─────────────────────
@@ -109,6 +120,17 @@ router.post('/log', async (req: Request, res: Response) => {
       }
     }
 
+    // Validate log_date format (YYYY-MM-DD)
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(body.log_date))) {
+      return res.status(400).json({ error: 'Invalid log_date format — expected YYYY-MM-DD' })
+    }
+
+    // Validate day_outcome if provided
+    const VALID_OUTCOMES = ['win', 'partial', 'miss']
+    if (body.day_outcome && !VALID_OUTCOMES.includes(String(body.day_outcome))) {
+      return res.status(400).json({ error: 'Invalid day_outcome — must be win, partial, or miss' })
+    }
+
     const payload = body as LogPayload
     const row = {
       log_date:        safeStr(payload.log_date, 10),
@@ -123,9 +145,9 @@ router.post('/log', async (req: Request, res: Response) => {
       work_done:       Boolean(payload.work_done),
       future_done:     Boolean(payload.future_done),
       body_done:       Boolean(payload.body_done),
-      energy_level:    Number(payload.energy_level),
-      focus_level:     payload.focus_level  != null ? Number(payload.focus_level)  : null,
-      mood_level:      payload.mood_level   != null ? Number(payload.mood_level)   : null,
+      energy_level:    clampLevel(payload.energy_level) ?? 5,
+      focus_level:     clampLevel(payload.focus_level),
+      mood_level:      clampLevel(payload.mood_level),
       day_outcome:     payload.day_outcome     ?? null,
       tomorrow_action: payload.tomorrow_action ? safeStr(payload.tomorrow_action, 500) : null,
       reflection:      payload.reflection      ? safeStr(payload.reflection, 1000)     : null,
@@ -392,6 +414,23 @@ router.post('/profile', async (req: Request, res: Response) => {
 
     const b   = req.body
     const now = BigQuery.timestamp(new Date())
+
+    // Validate birth_year if provided
+    if (b.birth_year != null) {
+      const year = Number(b.birth_year)
+      if (isNaN(year) || year < 1920 || year > new Date().getFullYear() - 10) {
+        return res.status(400).json({ error: 'Invalid birth year' })
+      }
+    }
+
+    // Validate numeric fields
+    if (b.height_cm != null && (Number(b.height_cm) < 50 || Number(b.height_cm) > 300)) {
+      return res.status(400).json({ error: 'Height must be between 50-300 cm' })
+    }
+    if (b.weight_kg != null && (Number(b.weight_kg) < 20 || Number(b.weight_kg) > 500)) {
+      return res.status(400).json({ error: 'Weight must be between 20-500 kg' })
+    }
+
     const row = {
       user_id:                 userId,
       name:                    b.name             ? safeStr(b.name, 100)       : null,
@@ -615,6 +654,17 @@ router.post('/nutrition/analyze', rateLimit(20, 60_000), async (req: Request, re
 
     const { image_base64, image_media_type, dish_name } = req.body
     if (!image_base64 && !dish_name) return res.status(400).json({ error: 'Provide either image_base64 or dish_name' })
+
+    // Guard: reject images larger than 10MB base64 (~7.5MB raw)
+    if (image_base64 && typeof image_base64 === 'string' && image_base64.length > 10_000_000) {
+      return res.status(400).json({ error: 'Image too large — max 10MB' })
+    }
+
+    // Validate media type
+    const VALID_MEDIA = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+    if (image_base64 && image_media_type && !VALID_MEDIA.includes(image_media_type)) {
+      return res.status(400).json({ error: 'Invalid image type — use JPEG, PNG, or WebP' })
+    }
 
     // ══════════════════════════════════════════════════════════════════════════
     // DUAL-MODEL NUTRITION ESTIMATION

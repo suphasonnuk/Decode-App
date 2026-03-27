@@ -1,10 +1,10 @@
 import React from 'react'
 import { useState, useEffect } from 'react'
 import type { LogPayload } from '../types'
-import { TASK_CATEGORIES, TASK_OPTIONS } from '../data'
-import { ENERGY_LABELS } from '../data'
-import { todayStr, weekStartStr, getAnchors, getTodayCache, saveTodayCache, parseBQDate } from '../store'
+import { TASK_CATEGORIES, TASK_OPTIONS, ENERGY_LABELS, todayMotivation } from '../data'
+import { todayStr, weekStartStr, getAnchors, getTodayCache, saveTodayCache, parseBQDate, bumpTaskFreq, sortedTaskOptions } from '../store'
 import { api } from '../api'
+import { hapticMedium, hapticSuccess } from '../lib/haptics'
 
 interface Props { onToast: (msg: string, err?: boolean) => void }
 type DoneState = { work: boolean; future: boolean; body: boolean }
@@ -36,6 +36,7 @@ export default function Today({ onToast }: Props) {
 
   const today      = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
   const energyInfo = ENERGY_LABELS[energy]
+  const motivation = todayMotivation()
 
   useEffect(() => {
     api.getYesterday().then(r => setYesterdayPlan(r.tomorrow_action)).catch(() => {})
@@ -68,7 +69,9 @@ export default function Today({ onToast }: Props) {
   }
 
   const toggleDone = (k: TaskKey) => {
-    setDone(p => ({ ...p, [k]: !p[k] }))
+    const next = !done[k]
+    setDone(p => ({ ...p, [k]: next }))
+    if (next) hapticMedium()
     setSaved(false)
   }
 
@@ -102,7 +105,7 @@ export default function Today({ onToast }: Props) {
     setLoading(true)
     try {
       const res = await api.saveLog(payload)
-      if (res.success) { setSaved(true); onToast('Saved to BigQuery ✓') }
+      if (res.success) { setSaved(true); hapticSuccess(); onToast('Saved to BigQuery ✓') }
       else onToast('Error: ' + (res.error ?? 'Unknown'), true)
     } catch (err) {
       onToast('Error: ' + (err instanceof Error ? err.message : 'Unknown'), true)
@@ -122,6 +125,7 @@ export default function Today({ onToast }: Props) {
             : `Select ${3 - selectedCount} more task${3 - selectedCount !== 1 ? 's' : ''} to continue`}
           {syncing && <span className="sync-spinner" />}
         </div>
+        <div className="motivation-line">{motivation}</div>
       </div>
 
       {/* ── Already saved banner ── */}
@@ -149,7 +153,7 @@ export default function Today({ onToast }: Props) {
           const value = taskValues[cat.key]
           const isDone = done[cat.key]
           const hasError = errors[cat.key]
-          const options = TASK_OPTIONS[cat.key]
+          const options = sortedTaskOptions(cat.key, TASK_OPTIONS[cat.key])
 
           return (
             <div
@@ -177,6 +181,7 @@ export default function Today({ onToast }: Props) {
                   } else {
                     setCustomMode(prev => ({ ...prev, [cat.key]: false }))
                     setTaskValue(cat.key, e.target.value)
+                    bumpTaskFreq(cat.key, e.target.value)
                   }
                 }}
                 className={`task-select ${value ? 'task-select-filled' : ''}`}

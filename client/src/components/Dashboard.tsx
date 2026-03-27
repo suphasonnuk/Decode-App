@@ -6,7 +6,28 @@ import { GENDER_OPTIONS, GOAL_OPTIONS, SLEEP_OPTIONS, EXERCISE_DAYS_OPTIONS, FIT
 import { DAYS_MINI, getGreeting } from '../data'
 import { ALL_ACHIEVEMENTS, getUnlockedAchievements, getNewAchievements } from '../achievements'
 import { api } from '../api'
-import { getTodayCache, getNightCache, getAnchors, weekDates, parseBQDate, getUserId, getProfileCache, saveProfileCache, todayStr, calculateNutritionTargets } from '../store'
+import { getTodayCache, getNightCache, getAnchors, weekDates, parseBQDate, getUserId, getProfileCache, saveProfileCache, todayStr, calculateNutritionTargets, getStreakFreezeCount } from '../store'
+
+interface ChallengeData {
+  category: string
+  icon: string
+  observation: string
+  challenge: string
+  science: string
+  source: string
+  difficulty: string
+}
+
+interface WeeklyStoryData {
+  headline: string
+  story: string
+  score: number | null
+  pattern: string | null
+  next_week: string | null
+  days_logged?: number
+  win_rate?: number
+  stats?: Record<string, string>
+}
 
 interface Props {
   onTabChange: (t: string) => void
@@ -51,10 +72,10 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
   const [streak,    setStreak]    = useState<{ current: number; longest30: number } | null>(null)
   const [loading,   setLoading]   = useState(true)
   const [mealLogged,    setMealLogged]    = useState(false)
-  const [challenge,     setChallenge]     = useState<any>(null)
+  const [challenge,     setChallenge]     = useState<ChallengeData | null>(null)
   const [challengeDone,     setChallengeDone]     = useState(false)
   const [challengeExpanded, setChallengeExpanded] = useState(false)
-  const [weeklyStory,   setWeeklyStory]   = useState<any>(null)
+  const [weeklyStory,   setWeeklyStory]   = useState<WeeklyStoryData | null>(null)
   const [storyExpanded, setStoryExpanded] = useState(true)
 
   // Profile state
@@ -81,22 +102,24 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
     Promise.all([api.getWeek(), api.getStreak(), api.getProfile(userId), api.getTrends(), api.getNutritionToday(userId)])
       .then(([rows, s, bqProfile, trends, nutrition]) => {
         // Check if at least one meal was logged today
-        const nutritionData = nutrition as any
+        const nutritionData = nutrition as { entries?: unknown[] } | null
         setMealLogged((nutritionData?.entries?.length ?? 0) > 0)
-        setWeekData(rows as any)
+        setWeekData(rows as LogRow[])
         setStreak(s)
 
         if (bqProfile) {
-          const merged = { ...getProfileCache(), ...bqProfile }
+          const merged = { ...getProfileCache(), ...bqProfile } as UserProfile
           setProfile(merged)
           setProfDraft(merged)
           saveProfileCache(merged)
         }
 
-        const lifetimeWins = (trends as any[]).filter(t => t.day_outcome === 'win').length
-        const energies     = (rows as any[]).map(r => r.energy_level).filter(Boolean) as number[]
+        const trendRows = trends as Array<{ day_outcome?: string; energy_level?: number }>
+        const lifetimeWins = trendRows.filter(t => t.day_outcome === 'win').length
+        const weekRows = rows as LogRow[]
+        const energies     = weekRows.map(r => r.energy_level).filter((v): v is number => typeof v === 'number' && v > 0)
         const avgEnergy    = energies.length ? energies.reduce((a,b)=>a+b,0)/energies.length : 0
-        const daysLogged   = (trends as any[]).filter(t => t.day_outcome).length
+        const daysLogged   = trendRows.filter(t => t.day_outcome).length
         const winRate      = daysLogged > 0 ? Math.round((lifetimeWins/daysLogged)*100) : 0
 
         const stats: UserStats = {
@@ -140,9 +163,9 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
     }
 
     // Restore challenge done/seen state — synced with ChallengePopup keys
-    if (sessionStorage.getItem('decode_challenge_done_' + localToday) === '1' ||
-        sessionStorage.getItem('decode_challenge_seen_' + localToday) === '1') {
-    }
+    const challengeSeen = sessionStorage.getItem('decode_challenge_done_' + localToday) === '1' ||
+        sessionStorage.getItem('decode_challenge_seen_' + localToday) === '1'
+    if (challengeSeen) setChallengeDone(true)
   }, [])
 
   // Save profile to BQ + local cache
@@ -562,7 +585,7 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
       {lossMsg && (
         <div
           className={`dash-loss-banner ${lossMsg.urgent ? 'dash-loss-urgent' : ''}`}
-          style={{ borderColor: lossMsg.urgent ? 'rgba(239,83,80,0.4)' : 'rgba(255,183,77,0.3)' }}
+          style={{ borderColor: lossMsg.urgent ? 'oklch(62% 0.20 25 / 0.4)' : 'oklch(76% 0.14 60 / 0.3)' }}
           onClick={() => onTabChange('night')}
         >
           <div className="dash-loss-left">
@@ -615,6 +638,18 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
         </div>
 
       </div>
+
+      {/* Streak freeze indicator */}
+      {(streak?.current ?? 0) >= 3 && (
+        <div className="streak-freeze-hint">
+          <span className="streak-freeze-icon">🧊</span>
+          <span className="streak-freeze-text">
+            {getStreakFreezeCount() > 0
+              ? 'Streak freeze available — protects you if you miss a day'
+              : 'Streak freeze used this week'}
+          </span>
+        </div>
+      )}
 
       {/* ── Morning Challenge — compact by default ── */}
       {challenge && !challengeDone && (
@@ -680,15 +715,23 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
 
       {/* Today progress */}
       <div className="dash-card" onClick={() => onTabChange(todaySteps.find(s=>!s.done)?.tab ?? 'daily')}>
-        <div className="dash-card-header">
-          <span className="dash-card-title">Today's progress</span>
-          <span className="dash-card-pct" style={{ color: todayPct===100?'var(--win)':'var(--accent)' }}>{todayPct}%</span>
-        </div>
-        <div className="dash-today-bar-track">
-          <div className="dash-today-bar-fill" style={{
-            width: `${todayPct}%`,
-            background: todayPct===100?'var(--win)':todayPct>=66?'var(--future)':'var(--work)',
-          }} />
+        <div className="dash-progress-hero">
+          <svg className="progress-ring" viewBox="0 0 100 100">
+            <circle className="progress-ring-bg" cx="50" cy="50" r="42" />
+            <circle
+              className="progress-ring-fill"
+              cx="50" cy="50" r="42"
+              style={{
+                strokeDasharray: `${2 * Math.PI * 42}`,
+                strokeDashoffset: `${2 * Math.PI * 42 * (1 - todayPct / 100)}`,
+                stroke: todayPct===100?'var(--win)':todayPct>=66?'var(--future)':'var(--work)',
+              }}
+            />
+          </svg>
+          <div className="progress-ring-label">
+            <span className="progress-ring-pct" style={{ color: todayPct===100?'var(--win)':'var(--accent)' }}>{todayPct}%</span>
+            <span className="progress-ring-sub">today</span>
+          </div>
         </div>
         <div className="dash-today-steps">
           {todaySteps.map(s => (
@@ -748,7 +791,7 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
               <div key={date} className={`dash-mini-day ${isToday?'today':''} ${isFuture?'future':''}`}>
                 <div className="dash-mini-name">{dayName}</div>
                 <div className="dash-mini-dot" style={{
-                  background: out==='win'?'var(--win)':out==='partial'?'var(--partial)':out==='miss'?'var(--miss)':isToday?'rgba(255,213,79,0.3)':isFuture?'var(--border)':'var(--border2)',
+                  background: out==='win'?'var(--win)':out==='partial'?'var(--partial)':out==='miss'?'var(--miss)':isToday?'oklch(82% 0.14 85 / 0.3)':isFuture?'var(--border)':'var(--border2)',
                   boxShadow: out==='win'?'0 0 6px var(--win)':undefined,
                 }} />
                 <div className="dash-mini-out" style={{ color: out==='win'?'var(--win)':out==='partial'?'var(--partial)':out==='miss'?'var(--miss)':'transparent' }}>

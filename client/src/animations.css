@@ -45,7 +45,7 @@
 }
 @keyframes bounce {
   0%,100% { transform: translateY(0); }
-  50%     { transform: translateY(-7px); }
+  50%     { transform: translateY(-4px); }
 }
 @keyframes float {
   0%,100% { transform: translateY(0); }
@@ -86,7 +86,7 @@
   gap: 14px;
   animation: fadeIn 0.35s var(--ease) both;
 }
-.splash-logo  { font-size: 48px; animation: bounce 1.4s var(--ease) infinite; }
+.splash-logo  { font-size: 48px; animation: float 2.5s var(--ease-out-quint) infinite; }
 .splash-title {
   font-family: var(--font-display);
   font-weight: 800; font-size: 28px;
@@ -102,13 +102,12 @@
 }
 .splash-bar {
   height: 100%; width: 40%;
-  background: linear-gradient(90deg, var(--accent), rgba(255,213,79,0.6));
+  background: linear-gradient(90deg, var(--accent), oklch(82% 0.14 85 / 0.6));
   border-radius: 2px;
   animation: slideLoader 1.1s var(--ease) infinite;
 }
 
 /* ── Tab transitions ─────────────────────────────── */
-.tab-content { padding: 20px 18px 0; }
 .tab-enter   {
   animation: fadeSlideUp 0.22s var(--ease) both;
 }
@@ -143,7 +142,7 @@
   transition: all var(--t-base) var(--ease);
 }
 .done-btn:active     { transform: scale(0.94); }
-.done-btn-active     { animation: pop 0.22s var(--ease-spring) both; }
+.done-btn-active     { animation: pop 0.22s var(--ease-out-quint) both; }
 
 /* ── Outcome cards ───────────────────────────────── */
 .outcome-card {
@@ -159,7 +158,7 @@
 .outcome-card:nth-child(3) { animation: fadeSlideUp 0.2s var(--ease) 0.10s both; }
 
 /* ── Checkbox ────────────────────────────────────── */
-.check-box.done::after { animation: tickIn 0.14s var(--ease-spring) both; }
+.check-box.done::after { animation: tickIn 0.14s var(--ease-out-quint) both; }
 
 /* ── Sliders ─────────────────────────────────────── */
 .energy-slider::-webkit-slider-thumb {
@@ -168,7 +167,7 @@
 .energy-slider:hover::-webkit-slider-thumb,
 .energy-slider:active::-webkit-slider-thumb {
   transform: scale(1.25);
-  box-shadow: 0 0 0 7px rgba(255,213,79,0.12);
+  box-shadow: 0 0 0 7px oklch(82% 0.14 85 / 0.12);
 }
 
 /* ── Tab button active bar ───────────────────────── */
@@ -198,8 +197,8 @@
   transition: background var(--t-base) var(--ease);
   animation: fadeSlideDown 0.25s var(--ease) both;
 }
-.daily-status:hover { background: rgba(255,255,255,0.025); }
-.daily-status-active { background: rgba(255,213,79,0.04) !important; }
+.daily-status:hover { background: oklch(95% 0.008 75 / 0.025); }
+.daily-status-active { background: oklch(82% 0.14 85 / 0.04) !important; }
 .daily-status-done    { color: var(--win); }
 .daily-status-morning { color: var(--work); }
 .daily-status-night   { color: var(--body); }
@@ -224,7 +223,7 @@
   text-align: center;
   box-shadow: var(--shadow-md);
 }
-.onboard-enter { animation: springIn 0.35s var(--ease-spring) both; }
+.onboard-enter { animation: springIn 0.35s var(--ease-out-quint) both; }
 .onboard-exit  { animation: scaleIn 0.2s var(--ease) reverse both; }
 .onboard-emoji {
   font-size: 52px; margin-bottom: 18px; display: block;
@@ -242,7 +241,7 @@
 .onboard-dot   {
   width: 6px; height: 6px; border-radius: 50%;
   background: var(--border2);
-  transition: all var(--t-base) var(--ease-spring);
+  transition: all var(--t-base) var(--ease-out-quint);
 }
 .onboard-dot-active { background: var(--accent); transform: scale(1.3); }
 .onboard-skip {
@@ -254,13 +253,13 @@
 
 /* ── Modal ───────────────────────────────────────── */
 .modal-overlay { animation: fadeIn 0.18s var(--ease) both; }
-.modal         { animation: scaleIn 0.22s var(--ease-spring) both; }
+.modal         { animation: scaleIn 0.22s var(--ease-out-quint) both; }
 
 /* ── Banners ─────────────────────────────────────── */
 .yesterday-banner { animation: fadeSlideDown 0.25s var(--ease) 0.08s both; opacity: 0; animation-fill-mode: forwards; }
 .info-banner      { animation: fadeSlideDown 0.22s var(--ease) both; }
 .warning-banner   { animation: fadeSlideUp 0.22s var(--ease) both, shake 0.4s var(--ease) 0.25s; }
-.streak-banner    { animation: springIn 0.32s var(--ease-spring) both; }
+.streak-banner    { animation: springIn 0.32s var(--ease-out-quint) both; }
 .nutr-nudge-banner { animation: fadeSlideDown 0.25s var(--ease) both; }
 
 /* ── Toast ───────────────────────────────────────── */
@@ -272,10 +271,10 @@
   opacity: 0;
   transition: opacity var(--t-base) var(--ease), transform var(--t-base) var(--ease);
   pointer-events: none; white-space: nowrap; z-index: 999;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+  box-shadow: 0 6px 20px oklch(5% 0.01 75 / 0.6);
 }
-.toast-ok   { background: var(--win);  color: #080808; }
-.toast-err  { background: var(--miss); color: #fff; }
+.toast-ok   { background: var(--win);  color: oklch(10% 0.008 75); }
+.toast-err  { background: var(--miss); color: oklch(95% 0.008 75); }
 .toast-show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
 /* ── Week expand ─────────────────────────────────── */
@@ -306,20 +305,15 @@
 /* ── Spinner ─────────────────────────────────────── */
 .spinner {
   width: 13px; height: 13px;
-  border: 2px solid rgba(10,10,10,0.25);
-  border-top-color: #0a0a0a;
+  border: 2px solid oklch(10% 0.01 75 / 0.25);
+  border-top-color: oklch(10% 0.01 75);
   border-radius: 50%;
   animation: spin 0.55s linear infinite;
   display: none;
 }
 .spinner.show { display: inline-block; }
 
-/* ── Sync spinner ────────────────────────────────── */
-.sync-spinner {
-  display: inline-block; width: 7px; height: 7px;
-  border-radius: 50%; background: var(--accent);
-  animation: pulse 1.3s var(--ease) infinite;
-}
+/* ── Sync spinner (see index.css for base style) ── */
 
 /* ── Help rhythm dots ────────────────────────────── */
 .help-rhythm-dot { transition: box-shadow var(--t-base) var(--ease); }
@@ -334,14 +328,14 @@
 .prof-goal-btn:active { transform: scale(0.96); }
 
 /* ── TDEE card ───────────────────────────────────── */
-.prof-tdee-card { animation: fadeSlideUp 0.25s var(--ease-spring) both; }
+.prof-tdee-card { animation: fadeSlideUp 0.25s var(--ease-out-quint) both; }
 
 /* ── Nutr confirm form ───────────────────────────── */
-.nutr-image-preview { animation: scaleIn 0.22s var(--ease-spring) both; }
+.nutr-image-preview { animation: scaleIn 0.22s var(--ease-out-quint) both; }
 .nutr-impact-card   { animation: fadeSlideUp 0.22s var(--ease) both; }
 
 /* ── Achievement popup ───────────────────────────── */
-.achievement-popup { animation: springIn 0.35s var(--ease-spring) both; }
+.achievement-popup { animation: springIn 0.35s var(--ease-out-quint) both; }
 
 /* ── Coach loading dots ──────────────────────────── */
 .coach-loading-dots div {
@@ -355,15 +349,28 @@
   transition: background var(--t-base) var(--ease);
   border-radius: var(--radius-sm);
 }
-.dash-today-step:hover { background: rgba(255,255,255,0.04); }
-
-/* ── Progress bar animated fill ─────────────────── */
-@keyframes barGrow {
-  from { width: 0 !important; }
-}
+.dash-today-step:hover { background: oklch(95% 0.008 75 / 0.04); }
 
 /* ── Nutr macro bar fill ─────────────────────────── */
 .nutr-macro-bar-fill {
   transition: width 0.5s var(--ease);
   animation: barGrow 0.5s var(--ease) both;
+}
+
+/* ── Confetti celebration ───────────────────────── */
+@keyframes confettiFall {
+  0%   { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
+}
+.confetti-container {
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 1000;
+  overflow: hidden;
+}
+.confetti-particle {
+  position: absolute; top: -8px;
+  width: 8px; height: 12px;
+  border-radius: 2px;
+  animation: confettiFall 2s var(--ease) forwards;
 }
