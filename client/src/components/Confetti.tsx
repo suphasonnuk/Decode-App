@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 interface Particle {
   id: number
   x: number
-  y: number
   color: string
   rotation: number
   scale: number
@@ -22,8 +21,7 @@ export default function Confetti({ onDone }: { onDone: () => void }) {
   const [particles] = useState<Particle[]>(() =>
     Array.from({ length: 40 }, (_, i) => ({
       id: i,
-      x: 30 + Math.random() * 40,
-      y: -10,
+      x: Math.random() * 100,
       color: COLORS[Math.floor(Math.random() * COLORS.length)],
       rotation: Math.random() * 360,
       scale: 0.5 + Math.random() * 0.8,

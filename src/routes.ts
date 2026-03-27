@@ -290,15 +290,21 @@ router.get('/streak', async (req: Request, res: Response) => {
     const today = todayStr()
 
     // ── WIN streak — consecutive days with day_outcome = 'win' ──────────────
+    // current = streak from today backwards (stops at first non-win)
+    // longest30 = longest win run in last 30 days (scans all rows)
     let current = 0, longest30 = 0, currentRun = 0
+    let currentDone = false  // once we break the current streak, stop counting it
     for (const row of rows) {
       const date = parseBQDate(row.log_date)
       if (date === today && !row.day_outcome) continue
       if (row.day_outcome === 'win') {
-        current++; currentRun++; longest30 = Math.max(longest30, currentRun)
-      } else if (row.day_outcome) {
-        if (current === 0) currentRun = 0; break
-      } else { break }
+        if (!currentDone) current++
+        currentRun++
+        longest30 = Math.max(longest30, currentRun)
+      } else {
+        currentDone = true
+        currentRun = 0
+      }
     }
 
     // ── Login streak — consecutive days with ANY log (morning OR night) ─────

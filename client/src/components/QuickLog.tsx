@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { getTodayCache, saveTodayCache } from '../store'
 import { hapticLight, hapticSuccess } from '../lib/haptics'
+import type { LogPayload } from '../types'
 
 interface Props {
   onToast: (msg: string, err?: boolean) => void
@@ -14,15 +15,24 @@ const CATEGORIES = [
 
 export default function QuickLog({ onToast }: Props) {
   const [open, setOpen] = useState(false)
-  const cache = getTodayCache()
+  const [cache, setCache] = useState<Partial<LogPayload>>(() => getTodayCache())
   const hasTasks = !!(cache.work_task && cache.future_task && cache.body_task)
+
+  // Re-read cache when menu opens (in case Today tab changed it)
+  const handleOpen = useCallback(() => {
+    setCache(getTodayCache())
+    setOpen(o => !o)
+    hapticLight()
+  }, [])
 
   if (!hasTasks) return null
 
   const toggle = (key: string) => {
     const prev = cache[key as keyof typeof cache] as boolean | undefined
     const next = !prev
-    saveTodayCache({ ...cache, [key]: next })
+    const updated = { ...cache, [key]: next }
+    saveTodayCache(updated)
+    setCache(updated)
     if (next) hapticSuccess()
     else hapticLight()
     onToast(next ? 'Marked done' : 'Unmarked')
@@ -50,7 +60,7 @@ export default function QuickLog({ onToast }: Props) {
       </div>
       <button
         className="quicklog-fab"
-        onClick={() => { setOpen(o => !o); hapticLight() }}
+        onClick={handleOpen}
         title="Quick log"
       >
         {open ? '✕' : '⚡'}

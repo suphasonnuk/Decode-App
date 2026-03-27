@@ -169,9 +169,10 @@ export default function Night({ onToast }: Props) {
               </div>
               <input
                 type="range" min={1} max={10} value={val}
-                onChange={e => { set(Number(e.target.value)); setSaved(false) }}
+                onChange={e => { if (!alreadySaved) { set(Number(e.target.value)); setSaved(false) } }}
                 className="energy-slider"
                 style={{ '--thumb-color': col } as React.CSSProperties}
+                disabled={alreadySaved}
               />
               <div className="slider-reading" style={{ color: col }}>
                 {getSliderLabel(cfg.levels, val)}
@@ -189,8 +190,9 @@ export default function Night({ onToast }: Props) {
           className={`field-textarea ${errors.tomorrow ? 'field-textarea-error' : ''}`}
           rows={2}
           value={tomorrow}
-          onChange={e => { setTomorrow(e.target.value); setErrors(p => ({ ...p, tomorrow: false })); setSaved(false) }}
+          onChange={e => { if (!alreadySaved) { setTomorrow(e.target.value); setErrors(p => ({ ...p, tomorrow: false })); setSaved(false) } }}
           placeholder='e.g. "I will review the CMG pipeline report at 9am"'
+          disabled={alreadySaved}
         />
         {errors.tomorrow && <div className="field-error">Please write your first action for tomorrow</div>}
       </div>
@@ -203,8 +205,9 @@ export default function Night({ onToast }: Props) {
           className="field-textarea"
           rows={3}
           value={reflection}
-          onChange={e => { setReflection(e.target.value); setSaved(false) }}
+          onChange={e => { if (!alreadySaved) { setReflection(e.target.value); setSaved(false) } }}
           placeholder="What was notable about today? Any lesson learned?"
+          disabled={alreadySaved}
         />
       </div>
 

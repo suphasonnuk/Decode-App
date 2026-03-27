@@ -43,7 +43,7 @@ export interface TrendPoint {
 export interface StreakResponse {
   current: number
   longest30: number
-  login_streak: number   // ✅ ADD THIS
+  login_streak: number
 }
 export interface WeekAnchors {
   work: string
@@ -53,10 +53,6 @@ export interface WeekAnchors {
 
 export interface HealthResponse {
   status: 'ok'
-  project: string
-  dataset: string
-  table: string
-  env: string
   auth: boolean
 }
 

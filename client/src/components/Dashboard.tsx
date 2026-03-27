@@ -69,7 +69,7 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
   })
   const bodyMetricsRef = useRef<HTMLDivElement>(null)
   const [weekData,  setWeekData]  = useState<LogRow[]>([])
-  const [streak,    setStreak]    = useState<{ current: number; longest30: number } | null>(null)
+  const [streak,    setStreak]    = useState<{ current: number; longest30: number; login_streak: number } | null>(null)
   const [loading,   setLoading]   = useState(true)
   const [mealLogged,    setMealLogged]    = useState(false)
   const [challenge,     setChallenge]     = useState<ChallengeData | null>(null)
@@ -621,9 +621,9 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
 
         {/* Login streak — any log counts */}
         <div className="dash-streak-card" style={{ flex: '1 1 100px', minWidth: 100 }} onClick={() => onTabChange('week')}>
-          <div className="dash-streak-fire">{(streak?.current ?? 0) > 0 ? '📅' : '💤'}</div>
+          <div className="dash-streak-fire">{(streak?.login_streak ?? 0) > 0 ? '📅' : '💤'}</div>
           <div>
-            <div className="dash-streak-num">{loading ? '—' : streak?.current ?? 0}</div>
+            <div className="dash-streak-num">{loading ? '—' : streak?.login_streak ?? 0}</div>
             <div className="dash-streak-label">log streak</div>
           </div>
         </div>
