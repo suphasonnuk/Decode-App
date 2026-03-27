@@ -1,0 +1,11 @@
+node_modules
+client/node_modules
+dist
+.env
+*.env
+service-account-key.json
+.git
+.gitignore
+.DS_Store
+npm-debug.log
+*.md

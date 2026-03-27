@@ -1,0 +1,34 @@
+{
+  "name": "DECODE — Daily Direction System",
+  "short_name": "DECODE",
+  "description": "Your personal daily tracking and coaching system",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "/icon-72.png",   "sizes": "72x72",   "type": "image/png" },
+    { "src": "/icon-96.png",   "sizes": "96x96",   "type": "image/png" },
+    { "src": "/icon-128.png",  "sizes": "128x128", "type": "image/png" },
+    { "src": "/icon-192.png",  "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-512.png",  "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "categories": ["productivity", "lifestyle", "health"],
+  "shortcuts": [
+    {
+      "name": "Log Today",
+      "short_name": "Today",
+      "description": "Open today's task log",
+      "url": "/?tab=daily",
+      "icons": [{ "src": "/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Close the Day",
+      "short_name": "Night",
+      "description": "Close today and plan tomorrow",
+      "url": "/?tab=night",
+      "icons": [{ "src": "/icon-96.png", "sizes": "96x96" }]
+    }
+  ]
+}

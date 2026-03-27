@@ -1,0 +1,17 @@
+gcloud scheduler jobs create http decode-push-morning 
+  --location=asia-southeast3 
+  --schedule="0 1 * * *" 
+  --uri="https://https://decode-tracker-70729980688.asia-southeast3.run.app//api/push/send" 
+  --http-method=POST 
+  --headers="Content-Type=application/json,x-scheduler-secret=YOUR_SCHEDULER_SECRET" 
+  --message-body='{"type":"morning"}' 
+  --project=daily-personal-app
+
+gcloud scheduler jobs create http decode-push-evening 
+  --location=asia-southeast3 
+  --schedule="0 14 * * *" 
+  --uri="https://https://decode-tracker-70729980688.asia-southeast3.run.app//api/push/send" 
+  --http-method=POST 
+  --headers="Content-Type=application/json,x-scheduler-secret=YOUR_SCHEDULER_SECRET" 
+  --message-body='{"type":"evening"}' 
+  --project=daily-personal-app
