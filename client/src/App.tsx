@@ -22,6 +22,7 @@ import Nutrition        from './components/Nutrition'
 import Coffee          from './components/Coffee'
 import AchievementPopup from './components/AchievementPopup'
 import ChallengePopup, { shouldShowChallengePopup } from './components/ChallengePopup'
+import DailyStatus  from './components/DailyStatus'
 import FriendsPanel from './components/FriendsPanel'
 import QuickLog from './components/QuickLog'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -102,6 +103,7 @@ function AppInner() {
   const [weekKey,       setWeekKey]      = useState(0)
   const [dashKey,       setDashKey]      = useState(0)
   const [dayKey,        setDayKey]       = useState(0)   // increments at midnight, remounts daily components
+  const [streakCount,   setStreakCount]  = useState<number | null>(null)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const touchStart = useRef<{ x: number; y: number } | null>(null)
 
@@ -188,6 +190,7 @@ function AppInner() {
     const profile = (() => { try { return JSON.parse(localStorage.getItem('decode_user_profile') || '{}') } catch { return {} } })()
     const sendBeat = () => api.heartbeat(userId, profile.name || undefined).catch(() => {})
     sendBeat()  // immediate on auth
+    api.getStreak().then(s => setStreakCount(s.current)).catch(() => {})
     const interval = setInterval(sendBeat, 60_000)
     return () => clearInterval(interval)
   }, [authed])
@@ -283,6 +286,13 @@ function AppInner() {
             </div>
           </div>
         </div>
+
+        <DailyStatus
+          key={`status-${dayKey}-${dashKey}`}
+          onTabChange={t => handleTabChange(t as AppTab)}
+          activeTab={tab}
+          streak={streakCount}
+        />
 
         <div
           className={`tab-content ${transitioning ? 'tab-exit' : 'tab-enter'}`}
