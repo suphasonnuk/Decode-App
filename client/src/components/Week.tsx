@@ -5,25 +5,7 @@ import { api } from '../api'
 import { TASK_CATEGORIES, TASK_OPTIONS, OUTCOME_CONFIGS, DAYS_FULL, DAYS_SHORT } from '../data'
 import { alpha } from '../lib/color'
 
-function ScoreBadge({ value, color }: { value: number | null | undefined; color: string }) {
-  if (value == null) return <span className="score-badge score-badge-empty">—</span>
-  return (
-    <span className="score-badge" style={{ background: alpha(color, 10), color, borderColor: alpha(color, 25) }}>
-      {value}
-    </span>
-  )
-}
 
-function OutcomePill({ outcome }: { outcome: string | null | undefined }) {
-  if (!outcome) return <span className="outcome-pill outcome-pill-empty">—</span>
-  const cfg = OUTCOME_CONFIGS.find(o => o.id === outcome)
-  if (!cfg) return <span className="outcome-pill outcome-pill-empty">—</span>
-  return (
-    <span className="outcome-pill" style={{ color: cfg.color, borderColor: alpha(cfg.color, 25), background: alpha(cfg.color, 8) }}>
-      {cfg.emoji} {cfg.shortLabel}
-    </span>
-  )
-}
 
 export default function Week() {
   const [weekOffset,  setWeekOffset]  = useState(0)

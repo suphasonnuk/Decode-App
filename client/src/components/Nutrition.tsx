@@ -442,7 +442,7 @@ export default function Nutrition({ onToast, onTabChange }: Props) {
     }
   }
 
-  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [, setDeletingId] = useState<string | null>(null)
 
   const handleDelete = async (entryId: string) => {
     if (!window.confirm('Remove this meal from today\'s log?')) return

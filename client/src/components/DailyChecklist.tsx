@@ -1,5 +1,4 @@
 import type { Tab } from '../types'
-import type { TimePeriod } from '../data/calendar'
 import { getTimePeriod, TIME_PERIOD_LABELS } from '../data/calendar'
 import { getTodayCache, getNightCache, getAnchors } from '../store'
 
@@ -101,7 +100,7 @@ function buildChecklist(s: ReturnType<typeof getDailyStatus>) {
   let taskWhen = 'Every morning · 3 min'
   let taskTitle = s.tasksSelected ? `Today's tasks logged` : `Pick today's 3 tasks`
   let taskDetail = ''
-  let taskMuted = false
+  // taskMuted removed — unused
 
   if (!s.tasksSelected) {
     if (s.period === 'early_morning') {
