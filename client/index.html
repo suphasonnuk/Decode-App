@@ -7,19 +7,19 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="DECODE" />
-    <meta name="theme-color" content="#0d0e16" />
+    <meta name="theme-color" content="#faf9f6" />
     <meta name="description" content="DECODE — Direction · Execute · Close · Observe · Develop · Evolve" />
     <link rel="manifest" href="/manifest.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'" />
     <title>DECODE</title>
   </head>
   <body>
     <div id="root"></div>
     <script>
       // Apply theme before React mounts to prevent flash
-      try { document.documentElement.setAttribute('data-theme', localStorage.getItem('decode_theme') || 'dark') } catch(e) {}
+      try { document.documentElement.setAttribute('data-theme', localStorage.getItem('decode_theme') || 'light') } catch(e) {}
     </script>
     <script type="module" src="/src/main.tsx"></script>
     <script>

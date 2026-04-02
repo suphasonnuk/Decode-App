@@ -1011,7 +1011,7 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
               <div key={date} className={`dash-mini-day ${isToday?'today':''} ${isFuture?'future':''}`}>
                 <div className="dash-mini-name">{dayName}</div>
                 <div className="dash-mini-dot" style={{
-                  background: out==='win'?'var(--win)':out==='partial'?'var(--partial)':out==='miss'?'var(--miss)':isToday?'oklch(74% 0.18 280 / 0.3)':isFuture?'var(--border)':'var(--border2)',
+                  background: out==='win'?'var(--win)':out==='partial'?'var(--partial)':out==='miss'?'var(--miss)':isToday?'oklch(58% 0.14 195 / 0.3)':isFuture?'var(--border)':'var(--border2)',
                   boxShadow: out==='win'?'0 0 6px var(--win)':undefined,
                 }} />
                 <div className="dash-mini-out" style={{ color: out==='win'?'var(--win)':out==='partial'?'var(--partial)':out==='miss'?'var(--miss)':'transparent' }}>
