@@ -38,7 +38,7 @@ export const TABS_INFO: TabInfo[] = [
     how: 'Check your streak at top → tap any day row to expand → tap "Edit this day" to fix mistakes → use ← Prev for past weeks.',
   },
   {
-    icon: '🤖', name: 'Coach', color: 'oklch(74% 0.18 280)',
+    icon: '🤖', name: 'Coach', color: 'oklch(58% 0.14 195)',
     when: 'Once a week · on demand',
     what: 'Claude reads your last 30 days of BigQuery data and gives personalized coaching.',
     how: 'Tap "Generate my coaching report" → Claude analyzes patterns → review your score, patterns, and one specific action. Report cached 6 hours.',

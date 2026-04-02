@@ -262,7 +262,7 @@ function getHeaderMessage(s: ReturnType<typeof getDailyStatus>, pct: number) {
 // ── Urgency styles ────────────────────────────────────────────────────────────
 const URGENCY_BADGE_STYLE: Record<string, { bg: string; color: string }> = {
   chill:   { bg: 'oklch(72% 0.12 220 / 0.12)',  color: 'var(--work)'    },
-  normal:  { bg: 'oklch(74% 0.18 280 / 0.15)',   color: 'var(--accent)'  },
+  normal:  { bg: 'oklch(58% 0.14 195 / 0.15)',   color: 'var(--accent)'  },
   urgent:  { bg: 'oklch(78% 0.16 80 / 0.2)',    color: 'var(--partial)' },
   overdue: { bg: 'oklch(64% 0.22 25 / 0.18)',   color: 'var(--miss)'    },
   none:    { bg: 'oklch(94% 0.006 260 / 0.06)', color: 'var(--muted2)'  },
