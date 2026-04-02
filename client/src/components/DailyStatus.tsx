@@ -1,10 +1,10 @@
+import type { ReactNode } from 'react'
+import type { Tab } from '../types'
 import { getTodayCache, getNightCache, getAnchors } from '../store'
 
-type AppTab = string
-
 interface Props {
-  onTabChange: (t: AppTab) => void
-  activeTab: AppTab
+  onTabChange: (t: Tab) => void
+  activeTab: Tab
   streak?: number | null
 }
 
@@ -40,9 +40,9 @@ export default function DailyStatus({ onTabChange, activeTab, streak }: Props) {
 
   // Determine the primary action and message
   let icon = '☀️'
-  let message: React.ReactNode = ''
+  let message: ReactNode = ''
   let sub = ''
-  let targetTab: AppTab = 'daily'
+  let targetTab: Tab = 'daily'
   let statusClass = 'daily-status-morning'
 
   if (todayDone) {
@@ -75,7 +75,7 @@ export default function DailyStatus({ onTabChange, activeTab, streak }: Props) {
     icon = '💪'
     targetTab = 'daily'
     message = <><strong>{tasksDoneCount}/3 tasks done</strong> — keep going</>
-    sub = hour >= 18 ? 'Close the day tonight' : 'Mark tasks as you finish them'
+    sub = hour >= 18 ? 'Finish up and close the day' : 'Mark tasks as you finish them'
   } else if (!nightDone) {
     targetTab = 'night'
     statusClass = 'daily-status-night'
@@ -91,8 +91,8 @@ export default function DailyStatus({ onTabChange, activeTab, streak }: Props) {
     } else {
       icon = '✓'
       statusClass = 'daily-status-done'
-      message = <><strong>All tasks done</strong> — close the day tonight</>
-      sub = 'Come back this evening'
+      message = <><strong>All tasks done</strong> — ready to close the day</>
+      sub = 'Tap to reflect and plan tomorrow'
     }
   }
 

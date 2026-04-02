@@ -1,14 +1,16 @@
 import { useState, useEffect, useCallback } from 'react'
 import { api } from '../api'
+import { alpha } from '../lib/color'
 
 interface UserPresence {
-  user_id:      string
-  display_name: string
-  last_seen:    string | null
-  day_outcome:  string | null
-  energy_level: number | null
-  status:       'online' | 'recent' | 'away' | 'offline'
-  is_me:        boolean
+  user_id:       string
+  display_name:  string
+  last_seen:     string | null
+  day_outcome:   string | null
+  energy_level:  number | null
+  status:        'online' | 'recent' | 'away' | 'offline'
+  is_me:         boolean
+  profile_image: string | null
 }
 
 interface Props {
@@ -17,17 +19,18 @@ interface Props {
 }
 
 const STATUS_CONFIG = {
-  online:  { color: '#a5d6a7', label: 'Online now',      dot: '#4caf50' },
-  recent:  { color: '#ffb74d', label: 'Active recently', dot: '#ff9800' },
-  away:    { color: '#787878', label: 'Away',             dot: '#9e9e9e' },
-  offline: { color: '#484848', label: 'Offline',          dot: '#424242' },
+  online:  { color: 'var(--win)',    label: 'Online now',      dot: 'oklch(62% 0.18 150)' },
+  recent:  { color: 'var(--partial)', label: 'Active recently', dot: 'oklch(72% 0.16 60)' },
+  away:    { color: 'var(--muted)',  label: 'Away',             dot: 'var(--muted)' },
+  offline: { color: 'var(--muted)',  label: 'Offline',          dot: 'oklch(30% 0.005 260)' },
 }
 
 const OUTCOME_CONFIG: Record<string, { emoji: string; color: string; label: string }> = {
-  win:     { emoji: '🏆', color: '#a5d6a7', label: 'WIN'     },
-  partial: { emoji: '⚡', color: '#ffb74d', label: 'PARTIAL' },
-  miss:    { emoji: '✗',  color: '#ef5350', label: 'MISS'    },
+  win:     { emoji: '🏆', color: 'var(--win)',     label: 'WIN'     },
+  partial: { emoji: '⚡', color: 'var(--partial)', label: 'PARTIAL' },
+  miss:    { emoji: '✗',  color: 'var(--miss)',    label: 'MISS'    },
 }
+
 
 function timeAgo(ts: string | null): string {
   if (!ts) return 'Never'
@@ -38,11 +41,26 @@ function timeAgo(ts: string | null): string {
   return `${Math.floor(diff / 86400)}d ago`
 }
 
-function Avatar({ name, size = 40 }: { name: string; size?: number }) {
+function Avatar({ name, image, size = 40 }: { name: string; image?: string | null; size?: number }) {
+  const [imgFailed, setImgFailed] = useState(false)
   const safeName = (name || '?').trim() || '?'
-  const initials = safeName.split(' ').filter(Boolean).map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'
-  // Deterministic color from name
   const hue = safeName.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0) % 360
+  const initials = safeName.split(' ').filter(Boolean).map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'
+
+  if (image && !imgFailed) {
+    return (
+      <img
+        src={image}
+        alt={safeName}
+        onError={() => setImgFailed(true)}
+        style={{
+          width: size, height: size, borderRadius: '50%', flexShrink: 0,
+          objectFit: 'cover',
+          border: `2px solid hsl(${hue}, 45%, 40%)`,
+        }}
+      />
+    )
+  }
   return (
     <div style={{
       width: size, height: size, borderRadius: '50%', flexShrink: 0,
@@ -105,7 +123,7 @@ export default function FriendsPanel({ isOpen, onClose }: Props) {
           <div className="friends-header-left">
             <span className="friends-header-icon">👥</span>
             <div>
-              <div className="friends-header-title">DECODE Users</div>
+              <div className="friends-header-title">DECODE Community</div>
               <div className="friends-header-sub">
                 {loading ? 'Loading...' : `${online.length} online · ${users.length} total`}
               </div>
@@ -157,7 +175,7 @@ export default function FriendsPanel({ isOpen, onClose }: Props) {
 
                       {/* Avatar + status dot */}
                       <div className="friends-avatar-wrap">
-                        <Avatar name={user.display_name} size={40} />
+                        <Avatar name={user.display_name} image={user.profile_image} size={40} />
                         <div className="friends-status-dot" style={{ background: cfg.dot }} />
                       </div>
 
@@ -177,7 +195,7 @@ export default function FriendsPanel({ isOpen, onClose }: Props) {
                       {/* Today's outcome */}
                       <div className="friends-outcome">
                         {outcome
-                          ? <span className="friends-outcome-pill" style={{ color: outcome.color, borderColor: `${outcome.color}40`, background: `${outcome.color}12` }}>
+                          ? <span className="friends-outcome-pill" style={{ color: outcome.color, borderColor: alpha(outcome.color, 25), background: alpha(outcome.color, 8) }}>
                               {outcome.emoji} {outcome.label}
                             </span>
                           : <span className="friends-outcome-empty">—</span>

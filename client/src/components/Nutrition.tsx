@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { api, type NutritionEntry, type NutritionFacts, type NutritionTotals, type HealthImpact } from '../api'
 import { getUserId, getProfileCache, calculateNutritionTargets } from '../store'
+import { alpha } from '../lib/color'
 
 // Daily targets are calculated from user profile using Mifflin-St Jeor formula.
 // Falls back to 2000kcal defaults if profile is incomplete.
@@ -68,6 +69,7 @@ function MealCard({ entry, onEdit, onDelete }: { entry: NutritionEntry; onEdit?:
           {entry.carbs_g   != null && <span style={{ color: 'var(--future)'  }}>C {Math.round(entry.carbs_g)}g</span>}
           {entry.fat_g     != null && <span style={{ color: 'var(--partial)' }}>F {Math.round(entry.fat_g)}g</span>}
           {entry.fiber_g   != null && <span style={{ color: 'var(--body)'    }}>Fb {Math.round(entry.fiber_g)}g</span>}
+          {entry.sugar_g   != null && <span style={{ color: 'oklch(72% 0.14 350)' }}>S {Math.round(entry.sugar_g)}g</span>}
         </div>
       )}
       {/* Health impact — parsed from ai_analysis if available */}
@@ -95,11 +97,11 @@ function HealthImpactCard({ impact }: { impact: HealthImpact }) {
   return (
     <div
       className="nutr-impact-card"
-      style={{ borderColor: `${cfg.color}30` }}
+      style={{ borderColor: alpha(cfg.color, 20) }}
       onClick={() => setExpanded(p => !p)}
     >
       {/* Always visible — just the rating badge */}
-      <div className="nutr-impact-header" style={{ background: `${cfg.color}08` }}>
+      <div className="nutr-impact-header" style={{ background: alpha(cfg.color, 5) }}>
         <span className="nutr-impact-icon">{cfg.icon}</span>
         <div style={{ flex: 1 }}>
           <div className="nutr-impact-label" style={{ color: cfg.color }}>
@@ -189,7 +191,7 @@ function NutritionForm({ initial, source, onSave, onCancel, saving }: NutritionF
     { key: 'carbs_g',   label: 'Carbs',    unit: 'g',    color: 'var(--future)'  },
     { key: 'fat_g',     label: 'Fat',      unit: 'g',    color: 'var(--partial)' },
     { key: 'fiber_g',   label: 'Fiber',    unit: 'g',    color: 'var(--body)'    },
-    { key: 'sugar_g',   label: 'Sugar',    unit: 'g',    color: '#f48fb1'        },
+    { key: 'sugar_g',   label: 'Sugar',    unit: 'g',    color: 'oklch(72% 0.14 350)' },
     { key: 'sodium_mg', label: 'Sodium',   unit: 'mg',   color: 'var(--muted2)'  },
   ]
 
@@ -597,6 +599,7 @@ export default function Nutrition({ onToast, onTabChange }: Props) {
                 <MacroBar label="Carbs"   value={totals.carbs_g}   target={TARGETS.carbs_g}   color="var(--future)"  />
                 <MacroBar label="Fat"     value={totals.fat_g}     target={TARGETS.fat_g}     color="var(--partial)" />
                 <MacroBar label="Fiber"   value={totals.fiber_g}   target={TARGETS.fiber_g}   color="var(--body)"    />
+                <MacroBar label="Sugar"   value={totals.sugar_g}   target={TARGETS.sugar_g}   color="oklch(72% 0.14 350)" />
               </div>
             )}
           </div>

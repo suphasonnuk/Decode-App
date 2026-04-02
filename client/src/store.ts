@@ -43,9 +43,9 @@ setTimeout(pruneOldCaches, 2000)
 
 // ── Auth token ────────────────────────────────────────────────────────────────
 const AUTH_KEY = 'decode_auth_token'
-export const getAuthToken  = (): string | null => localStorage.getItem(AUTH_KEY)
-export const setAuthToken  = (t: string): void  => localStorage.setItem(AUTH_KEY, t)
-export const clearAuthToken = (): void           => localStorage.removeItem(AUTH_KEY)
+export const getAuthToken   = (): string | null => { try { return localStorage.getItem(AUTH_KEY) } catch { return null } }
+export const setAuthToken   = (t: string): void => { try { localStorage.setItem(AUTH_KEY, t) } catch {} }
+export const clearAuthToken = (): void          => { try { localStorage.removeItem(AUTH_KEY) } catch {} }
 
 // ── Anchors ───────────────────────────────────────────────────────────────────
 export const getAnchors  = (): WeekAnchors => lsGet<WeekAnchors>('anch_'+weekStartStr()) ?? {work:'',future:'',body:''}
@@ -60,10 +60,11 @@ interface NightCache {
   outcome: DayOutcome | null
   focus_level: number
   mood_level: number
+  emotions: string[]
   tomorrow_action: string
   reflection: string
 }
-export const getNightCache  = (): NightCache => lsGet<NightCache>('night_'+todayStr()) ?? {outcome:null,focus_level:5,mood_level:5,tomorrow_action:'',reflection:''}
+export const getNightCache  = (): NightCache => lsGet<NightCache>('night_'+todayStr()) ?? {outcome:null,focus_level:5,mood_level:5,emotions:[],tomorrow_action:'',reflection:''}
 export const saveNightCache = (d: NightCache): void => lsSet('night_'+todayStr(), d)
 
 // ── Per-day cache (used by week view fallback) ────────────────────────────────
@@ -113,6 +114,8 @@ export interface UserProfile {
   weight_kg:              number | null
   exercise_days_per_week: number | null
   fitness_goal:           string
+  // Profile image — base64 data URI, resized client-side to max 128×128
+  profile_image:          string | null
 }
 
 // ── TDEE Calculator — Mifflin-St Jeor ─────────────────────────────────────────
@@ -127,6 +130,7 @@ export interface NutritionTargets {
   carbs_g:   number   // remaining after protein + fat
   fat_g:     number   // 30% of TDEE
   fiber_g:   number   // 38g men / 25g women
+  sugar_g:   number   // WHO: ≤25g added sugar ideal, 50g max
   sodium_mg: number   // 2300mg
   bmr:       number   // basal metabolic rate (kcal, for display)
   tdee:      number   // total daily energy expenditure before goal adjust
@@ -135,7 +139,7 @@ export interface NutritionTargets {
 export function calculateNutritionTargets(profile: UserProfile): NutritionTargets {
   const defaults: NutritionTargets = {
     calories: 2000, protein_g: 130, carbs_g: 250,
-    fat_g: 65, fiber_g: 30, sodium_mg: 2300, bmr: 0, tdee: 2000,
+    fat_g: 65, fiber_g: 30, sugar_g: 50, sodium_mg: 2300, bmr: 0, tdee: 2000,
   }
 
   const { height_cm, weight_kg, birth_year, gender, exercise_days_per_week, fitness_goal } = profile
@@ -160,8 +164,12 @@ export function calculateNutritionTargets(profile: UserProfile): NutritionTarget
   const fat_g        = Math.round((calories * 0.30) / 9)
   const carbs_g      = Math.max(Math.round((calories - protein_g * 4 - fat_g * 9) / 4), 50)
   const fiber_g      = isMale ? 38 : 25
+  // WHO: added sugar < 10% of total energy (ideally < 5%), sugar = 4 kcal/g
+  // Use 10% ceiling; tighten to 5% for weight-loss goal
+  const sugar_pct    = fitness_goal === 'lose_weight' ? 0.05 : 0.10
+  const sugar_g      = Math.round((calories * sugar_pct) / 4)
 
-  return { calories, protein_g, carbs_g, fat_g, fiber_g, sodium_mg: 2300, bmr, tdee }
+  return { calories, protein_g, carbs_g, fat_g, fiber_g, sugar_g, sodium_mg: 2300, bmr, tdee }
 }
 
 const PROFILE_KEY = 'decode_user_profile'
@@ -170,6 +178,7 @@ export function getProfileCache(): UserProfile {
   const defaults: Partial<UserProfile> = {
     height_cm: null, weight_kg: null,
     exercise_days_per_week: null, fitness_goal: 'maintain',
+    profile_image: null,
   }
   try {
     const raw = localStorage.getItem(PROFILE_KEY)
@@ -189,6 +198,7 @@ export function getProfileCache(): UserProfile {
     weight_kg:              null,
     exercise_days_per_week: null,
     fitness_goal:           'maintain',
+    profile_image:          null,
   }
 }
 

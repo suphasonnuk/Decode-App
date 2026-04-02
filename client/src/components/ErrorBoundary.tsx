@@ -33,7 +33,7 @@ export default class ErrorBoundary extends Component<Props, State> {
           maxWidth: 400,
           margin: '60px auto',
         }}>
-          <div style={{ fontSize: 40, marginBottom: 16 }}>🦞</div>
+          <div style={{ fontSize: 40, marginBottom: 16 }}>⚠️</div>
           <h2 style={{
             fontFamily: 'var(--font-display)',
             fontSize: 18,

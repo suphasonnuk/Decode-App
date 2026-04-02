@@ -6,6 +6,9 @@ import router, { authMiddleware } from './routes'
 
 const app = express()
 
+// Trust Cloud Run's proxy — ensures req.ip is the real client IP, not the load balancer
+app.set('trust proxy', true)
+
 // ── Fix 4: CORS — restrict to your Cloud Run URL ──────────────────────────────
 // Set ALLOWED_ORIGIN env var to your Cloud Run URL.
 // Falls back to permissive in dev (no ALLOWED_ORIGIN set).
@@ -22,7 +25,18 @@ app.use(cors({
   credentials: false,
 }))
 
-app.use(express.json({ limit: '12mb' }))
+// ── Security headers ────────────────────────────────────────────────────────
+app.use((_req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('X-Frame-Options', 'DENY')
+  res.setHeader('X-XSS-Protection', '0')
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
+  res.setHeader('Permissions-Policy', 'camera=(self), microphone=(), geolocation=()')
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+  next()
+})
+
+app.use(express.json({ limit: '5mb' }))
 app.use(express.urlencoded({ extended: true, limit: '1mb' }))
 
 // ── Request timeout — 60s for all routes ──────────────────────────────────────
@@ -57,7 +71,7 @@ app.get('*', (_req, res) => {
 
 const PORT = Number(process.env.PORT) || 3000
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`\n🦞 DECODE server running → http://localhost:${PORT}`)
+  console.log(`\n▶ DECODE server running → http://localhost:${PORT}`)
   console.log(`   Auth    : ${process.env.APP_SECRET    ? '🔒 enabled' : '⚠️  disabled'}`)
   console.log(`   CORS    : ${ALLOWED_ORIGIN            ? ALLOWED_ORIGIN : 'open (dev)'}`)
   console.log(`   Env     : ${process.env.NODE_ENV      || 'development'}\n`)

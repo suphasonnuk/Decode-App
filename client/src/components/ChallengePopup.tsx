@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../api'
+import { alpha } from '../lib/color'
 import { todayStr } from '../store'
 
 interface Challenge {
@@ -38,14 +39,15 @@ export default function ChallengePopup({ onDone }: Props) {
   const [error,     setError]     = useState(false)
 
   useEffect(() => {
+    let visTimer: ReturnType<typeof setTimeout>
     // Try cache first
-    const cached = sessionStorage.getItem(CACHE_KEY())
+    const cached = localStorage.getItem(CACHE_KEY())
     if (cached) {
       try {
         setChallenge(JSON.parse(cached))
         setLoading(false)
-        setTimeout(() => setVisible(true), 80)
-        return
+        visTimer = setTimeout(() => setVisible(true), 80)
+        return () => clearTimeout(visTimer)
       } catch {}
     }
 
@@ -53,21 +55,22 @@ export default function ChallengePopup({ onDone }: Props) {
     api.getChallenge()
       .then(data => {
         setChallenge(data)
-        sessionStorage.setItem(CACHE_KEY(), JSON.stringify(data))
+        localStorage.setItem(CACHE_KEY(), JSON.stringify(data))
       })
       .catch(() => setError(true))
       .finally(() => {
         setLoading(false)
-        setTimeout(() => setVisible(true), 80)
+        visTimer = setTimeout(() => setVisible(true), 80)
       })
+    return () => clearTimeout(visTimer)
   }, [])
 
   const dismiss = (accepted: boolean) => {
     setVisible(false)
     // Mark as seen so it doesn't show again today
     try {
-      sessionStorage.setItem(SEEN_KEY(), '1')
-      if (accepted) sessionStorage.setItem(ACCEPTED_KEY(), '1')
+      localStorage.setItem(SEEN_KEY(), '1')
+      if (accepted) localStorage.setItem(ACCEPTED_KEY(), '1')
     } catch {}
     setTimeout(() => onDone(accepted), 380)
   }
@@ -85,7 +88,7 @@ export default function ChallengePopup({ onDone }: Props) {
         {loading && (
           <div className="challenge-loading">
             <div className="coach-loading-dots"><div /><div /><div /></div>
-            <div style={{ fontSize: 11, color: 'var(--muted2)', marginTop: 10 }}>
+            <div className="coach-welcome-hint">
               Analysing your data...
             </div>
           </div>
@@ -93,11 +96,11 @@ export default function ChallengePopup({ onDone }: Props) {
 
         {error && !loading && (
           <div className="challenge-loading">
-            <div style={{ fontSize: 32, marginBottom: 10 }}>😴</div>
-            <div style={{ fontSize: 12, color: 'var(--muted2)' }}>
+            <div className="empty-state-icon">😴</div>
+            <div className="empty-state-desc">
               Could not load today's challenge — check your connection.
             </div>
-            <button className="btn-secondary" style={{ marginTop: 16 }} onClick={() => dismiss(false)}>
+            <button className="btn-secondary mt-4" onClick={() => dismiss(false)}>
               Skip for now
             </button>
           </div>
@@ -111,7 +114,7 @@ export default function ChallengePopup({ onDone }: Props) {
               <div className="challenge-sheet-category">
                 <div
                   className="challenge-sheet-icon-wrap"
-                  style={{ background: `${diffColor}15` }}
+                  style={{ background: alpha(diffColor, 10) }}
                 >
                   <span>{challenge.icon}</span>
                 </div>
@@ -137,7 +140,7 @@ export default function ChallengePopup({ onDone }: Props) {
 
             {/* Science backing */}
             <div className="challenge-sheet-science">
-              <span style={{ fontSize: 13, flexShrink: 0 }}>📊</span>
+              <span className="challenge-science-icon">📊</span>
               <div>
                 <div className="challenge-science-text">{challenge.science}</div>
                 <div className="challenge-science-source">{challenge.source}</div>
@@ -153,8 +156,7 @@ export default function ChallengePopup({ onDone }: Props) {
                 ✓ Try this today
               </button>
               <button
-                className="btn-secondary"
-                style={{ marginTop: 8 }}
+                className="btn-secondary mt-2"
                 onClick={() => dismiss(false)}
               >
                 Skip for now
@@ -169,10 +171,5 @@ export default function ChallengePopup({ onDone }: Props) {
 }
 
 // Helper used by App.tsx to decide whether to show the popup
-export function shouldShowChallengePopup(): boolean {
-  try {
-    return sessionStorage.getItem(SEEN_KEY()) !== '1'
-  } catch {
-    return false
-  }
-}
+// Re-export from shared lib for backwards compatibility
+export { shouldShowChallengePopup } from '../lib/challenge'

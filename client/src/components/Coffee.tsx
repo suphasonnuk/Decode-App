@@ -8,6 +8,8 @@ import { getUserId } from '../store'
 //   World Barista Championship espresso parameters (2024)
 //   Hoffmann, J. — The World Atlas of Coffee (2014)
 
+import { alpha } from '../lib/color'
+
 type Roast = 'light' | 'medium' | 'dark'
 
 interface Recipe {
@@ -37,7 +39,7 @@ const ROAST_DOSE: Record<Roast, number> = { light: 19, medium: 18, dark: 17 }
 
 const COFFEE_TYPES: CoffeeType[] = [
   {
-    id: 'espresso', name: 'Espresso', icon: '☕', color: '#ffb74d',
+    id: 'espresso', name: 'Espresso', icon: '☕', color: 'oklch(80% 0.14 70)',
     tagline: 'Pure. Concentrated. The foundation.',
     base: 'espresso',
     getRecipe: (roast) => ({
@@ -63,7 +65,7 @@ const COFFEE_TYPES: CoffeeType[] = [
     ],
   },
   {
-    id: 'americano', name: 'Americano', icon: '🖤', color: '#4fc3f7',
+    id: 'americano', name: 'Americano', icon: '🖤', color: 'oklch(76% 0.10 230)',
     tagline: 'Espresso strength, filter coffee volume.',
     base: 'espresso',
     getRecipe: (roast) => ({
@@ -84,7 +86,7 @@ const COFFEE_TYPES: CoffeeType[] = [
     ],
   },
   {
-    id: 'latte', name: 'Latte', icon: '🥛', color: '#a5d6a7',
+    id: 'latte', name: 'Latte', icon: '🥛', color: 'oklch(80% 0.10 150)',
     tagline: 'Silky microfoam. The everyday essential.',
     base: 'espresso',
     getRecipe: (roast) => ({
@@ -106,7 +108,7 @@ const COFFEE_TYPES: CoffeeType[] = [
     ],
   },
   {
-    id: 'flat_white', name: 'Flat White', icon: '🤍', color: '#ce93d8',
+    id: 'flat_white', name: 'Flat White', icon: '🤍', color: 'oklch(74% 0.12 320)',
     tagline: 'Ristretto base. Stronger, tighter, richer.',
     base: 'espresso',
     getRecipe: (roast) => ({
@@ -127,7 +129,7 @@ const COFFEE_TYPES: CoffeeType[] = [
     ],
   },
   {
-    id: 'cappuccino', name: 'Cappuccino', icon: '💫', color: '#ffd54f',
+    id: 'cappuccino', name: 'Cappuccino', icon: '💫', color: 'oklch(86% 0.14 85)',
     tagline: 'Equal thirds. The Italian original.',
     base: 'espresso',
     getRecipe: (roast) => ({
@@ -151,9 +153,9 @@ const COFFEE_TYPES: CoffeeType[] = [
 ]
 
 const ROAST_OPTIONS = [
-  { id: 'light',  label: 'Light Roast',  desc: 'Fruity · Bright · Tea-like',       color: '#ffcc80' },
-  { id: 'medium', label: 'Medium Roast', desc: 'Balanced · Caramel · Classic',     color: '#ff8a65' },
-  { id: 'dark',   label: 'Dark Roast',   desc: 'Bold · Chocolate · Smoky',         color: '#5d4037' },
+  { id: 'light',  label: 'Light Roast',  desc: 'Fruity · Bright · Tea-like',       color: 'oklch(78% 0.16 80)' },
+  { id: 'medium', label: 'Medium Roast', desc: 'Balanced · Caramel · Classic',     color: 'oklch(72% 0.14 45)' },
+  { id: 'dark',   label: 'Dark Roast',   desc: 'Bold · Chocolate · Smoky',         color: 'oklch(38% 0.04 50)' },
 ] as const
 
 interface CoffeeLog {
@@ -246,7 +248,7 @@ export default function Coffee({ onToast }: Props) {
       </div>
 
       {/* ── Coffee type grid ── */}
-      <div className="card-label" style={{ marginBottom: 10 }}>What are you making?</div>
+      <div className="card-label coffee-label-mb">What are you making?</div>
       <div className="coffee-type-grid">
         {COFFEE_TYPES.map(t => (
           <button
@@ -264,12 +266,12 @@ export default function Coffee({ onToast }: Props) {
 
       {/* ── Recipe card ── */}
       {selected && recipe && selectedType && (
-        <div className="coffee-recipe-card" style={{ borderColor: `${selectedType.color}40` }}>
+        <div className="coffee-recipe-card" style={{ borderColor: alpha(selectedType.color, 25) }}>
 
           {/* Recipe header */}
-          <div className="coffee-recipe-header" style={{ background: `${selectedType.color}10` }}>
+          <div className="coffee-recipe-header" style={{ background: alpha(selectedType.color, 6) }}>
             <div className="coffee-recipe-title-row">
-              <span style={{ fontSize: 22 }}>{selectedType.icon}</span>
+              <span className="coffee-recipe-icon">{selectedType.icon}</span>
               <div>
                 <div className="coffee-recipe-title" style={{ color: selectedType.color }}>
                   {selectedType.name}
@@ -334,8 +336,7 @@ export default function Coffee({ onToast }: Props) {
 
           {/* Log button */}
           <button
-            className="btn-primary"
-            style={{ marginTop: 14 }}
+            className="btn-primary mt-3"
             onClick={handleLog}
             disabled={saving}
           >
@@ -346,7 +347,7 @@ export default function Coffee({ onToast }: Props) {
 
       {/* ── Today's coffees ── */}
       {todayLogs.length > 0 && (
-        <div className="card" style={{ marginTop: 12 }}>
+        <div className="card coffee-recipe-card-mt">
           <div className="card-label">Today's coffees</div>
           {todayLogs.map((log, i) => (
             <div key={log.entry_id ?? i} className="coffee-log-row">
@@ -354,7 +355,7 @@ export default function Coffee({ onToast }: Props) {
                 {coffeeIcon[log.coffee_type] ?? '☕'}
               </span>
               <div className="coffee-log-body">
-                <div className="coffee-log-name" style={{ textTransform: 'capitalize' }}>
+                <div className="coffee-log-name coffee-log-name-cap">
                   {log.coffee_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </div>
                 <div className="coffee-log-meta">
@@ -372,7 +373,7 @@ export default function Coffee({ onToast }: Props) {
       )}
 
       {todayLogs.length === 0 && !loading && !selected && (
-        <div className="empty-state" style={{ marginTop: 20 }}>
+        <div className="empty-state mt-4">
           <div className="empty-state-icon">☕</div>
           <div className="empty-state-title">No coffee yet today</div>
           <div className="empty-state-desc">Pick your roast above, then choose your drink to get the recipe.</div>

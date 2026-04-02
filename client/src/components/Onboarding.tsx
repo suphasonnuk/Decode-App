@@ -4,24 +4,31 @@ interface Props { onDone: () => void }
 
 const SLIDES = [
   {
-    emoji: '🦞',
+    emoji: '🎯',
     title: 'Welcome to DECODE',
-    sub: 'Your daily direction system',
-    body: 'DECODE helps you stay focused every day in under 10 minutes. Three simple habits: set your weekly goals, log your morning, close your night.',
-    cta: 'Got it, let\'s go',
+    sub: 'Direction · Execute · Close · Observe · Develop · Evolve',
+    body: 'DECODE is a system for people who want clarity, not noise. Each letter is a step: set Direction, Execute your plan, Close the day, Observe your data, Develop better habits, and Evolve week over week.',
+    cta: 'Tell me more',
   },
   {
     emoji: '☀️',
-    title: 'Every morning (3 min)',
-    sub: 'Open the TODAY tab',
-    body: 'Pick one task for work, one step toward your future goals, and one body habit. Set your energy level. That\'s it. The app remembers what you planned the night before.',
+    title: 'Direction + Execute',
+    sub: 'Every morning — 3 min',
+    body: 'Each morning you set Direction: pick one task for Work, one for your Future, one for your Body. Then you Execute — go do them. The app tracks what you planned so evening-you can judge honestly.',
     cta: 'Makes sense',
   },
   {
     emoji: '🌙',
-    title: 'Every night (5 min)',
-    sub: 'Open the NIGHT tab',
-    body: 'Rate your day — WIN, PARTIAL, or MISS. Score your focus and mood. Write your first action for tomorrow so morning-you already knows what to do.',
+    title: 'Close + Observe',
+    sub: 'Every evening — 5 min',
+    body: 'Close the day: WIN, PARTIAL, or MISS. Score your focus and mood. Then Observe — the dashboard shows your patterns over time. Write tomorrow\'s first action so morning-you already has Direction.',
+    cta: 'Got it',
+  },
+  {
+    emoji: '📈',
+    title: 'Develop + Evolve',
+    sub: 'Every week — 5 min',
+    body: 'On Sundays, set your 3 weekly anchors — your compass for Work, Future, and Body. Review your week, spot what worked, and adjust. Small corrections compound. That\'s how you Evolve.',
     cta: 'I\'m ready to start',
   },
 ]

@@ -106,7 +106,8 @@ export const api = {
     get<{
       user_id: string; display_name: string; last_seen: string | null;
       day_outcome: string | null; energy_level: number | null;
-      status: 'online' | 'recent' | 'away' | 'offline'; is_me: boolean
+      status: 'online' | 'recent' | 'away' | 'offline'; is_me: boolean;
+      profile_image: string | null
     }[]>('/users/presence'),
 
   // ── Challenge + Weekly Story ──────────────────────────────────────────────────
@@ -120,6 +121,11 @@ export const api = {
     pattern: string | null; next_week: string;
     stats: Record<string, string>; days_logged: number; win_rate: number
   }>('/weekly-story'),
+
+  // ── Decoded Insights ─────────────────────────────────────────────────────
+  getDecoded: () => get<DecodedInsights>('/decoded'),
+  getDecodedPortrait: (userId: string) =>
+    post<DecodedPortraitResponse>('/decoded/portrait', { user_id: userId }),
 
   // ── Coffee ─────────────────────────────────────────────────────────────────
   logCoffee: (payload: { user_id: string; coffee_type: string; roast: string; dose_g?: number; yield_g?: number }) =>
@@ -193,6 +199,65 @@ export interface CoffeeEntry {
   dose_g:      number | null
   yield_g:     number | null
   notes:       string | null
+}
+
+// ── Decoded Insights types ────────────────────────────────────────────────
+export interface DecodedCorrelation {
+  label: string
+  insight: string
+  strength: number
+}
+
+export interface DecodedDayOfWeek {
+  day: string
+  winRate: number
+  avgMood: number
+  avgEnergy: number
+  count: number
+}
+
+export interface DecodedInsights {
+  ready: boolean
+  message?: string
+  days_logged: number
+  days_completed?: number
+  overview?: {
+    win_rate: number
+    avg_energy: number
+    avg_focus: number
+    avg_mood: number
+    all_tasks_done_rate: number
+    reflection_rate: number
+  }
+  correlations?: DecodedCorrelation[]
+  day_of_week?: DecodedDayOfWeek[]
+  best_day?: { day: string; win_rate: number } | null
+  worst_day?: { day: string; win_rate: number } | null
+  emotions?: {
+    total_days_with_emotions: number
+    top_emotions: { emotion: string; count: number; pct: number; winCorrelation: number }[]
+    win_emotions: string[]
+    miss_emotions: string[]
+  }
+  energy_outcome?: {
+    high_energy_win_rate: number | null
+    low_energy_win_rate: number | null
+  }
+  insights?: string[]
+}
+
+export interface DecodedPortrait {
+  title: string
+  portrait: string
+  blind_spot: string
+  strength: string
+  question: string
+}
+
+export interface DecodedPortraitResponse {
+  portrait: DecodedPortrait | null
+  message?: string
+  days_analyzed?: number
 }
 
 export interface NutritionDaySummary {

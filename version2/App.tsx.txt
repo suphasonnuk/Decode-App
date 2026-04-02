@@ -101,46 +101,6 @@ async function requestPushPermission(userId: string) {
 
 interface ToastState { msg: string; isErr: boolean; visible: boolean }
 
-// ── Offline detection + pending sync count ─────────────────────────────────
-function useOfflineStatus() {
-  const [isOffline, setIsOffline] = useState(!navigator.onLine)
-  const [pendingCount, setPendingCount] = useState(0)
-
-  useEffect(() => {
-    const goOffline = () => setIsOffline(true)
-    const goOnline  = () => setIsOffline(false)
-    window.addEventListener('offline', goOffline)
-    window.addEventListener('online',  goOnline)
-    return () => {
-      window.removeEventListener('offline', goOffline)
-      window.removeEventListener('online',  goOnline)
-    }
-  }, [])
-
-  // Check IndexedDB for pending sync items
-  useEffect(() => {
-    function checkQueue() {
-      try {
-        const req = indexedDB.open('decode-offline', 1)
-        req.onsuccess = () => {
-          const db = req.result
-          if (!db.objectStoreNames.contains('queue')) { db.close(); return }
-          const tx    = db.transaction('queue', 'readonly')
-          const count = tx.objectStore('queue').count()
-          count.onsuccess = () => { setPendingCount(count.result); db.close() }
-          count.onerror   = () => db.close()
-        }
-        req.onerror = () => {}
-      } catch { /* IndexedDB not available */ }
-    }
-    checkQueue()
-    const interval = setInterval(checkQueue, 10_000) // re-check every 10s
-    return () => clearInterval(interval)
-  }, [])
-
-  return { isOffline, pendingCount }
-}
-
 function getStoredTheme(): 'dark' | 'light' {
   try { return (localStorage.getItem('decode_theme') as 'dark' | 'light') || 'dark' } catch { return 'dark' }
 }
@@ -168,7 +128,6 @@ function AppInner() {
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const userId = getUserId()
-  const { isOffline, pendingCount } = useOfflineStatus()
 
   // Apply theme to document
   useEffect(() => {
@@ -346,10 +305,6 @@ function AppInner() {
   return (
     <>
       <a href="#main-content" className="skip-to-content">Skip to content</a>
-      <div className={`offline-banner ${isOffline || pendingCount > 0 ? 'offline-show' : ''}`} role="alert">
-        {isOffline ? 'You\'re offline — data will sync when reconnected' : ''}
-        {pendingCount > 0 && <span className="sync-count">{pendingCount} log{pendingCount > 1 ? 's' : ''} pending sync</span>}
-      </div>
       <div className="app">
         <header className="app-header" role="banner">
           <div className="app-header-left">

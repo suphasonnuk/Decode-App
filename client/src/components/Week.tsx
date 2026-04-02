@@ -3,11 +3,12 @@ import type { LogRow, LogPayload } from '../types'
 import { getAnchors, weekDates, getDayCache, getNightCacheForDate, todayStr, weekStartForOffset, parseBQDate } from '../store'
 import { api } from '../api'
 import { TASK_CATEGORIES, TASK_OPTIONS, OUTCOME_CONFIGS, DAYS_FULL, DAYS_SHORT } from '../data'
+import { alpha } from '../lib/color'
 
 function ScoreBadge({ value, color }: { value: number | null | undefined; color: string }) {
-  if (!value) return <span className="score-badge score-badge-empty">—</span>
+  if (value == null) return <span className="score-badge score-badge-empty">—</span>
   return (
-    <span className="score-badge" style={{ background: `${color}18`, color, borderColor: `${color}40` }}>
+    <span className="score-badge" style={{ background: alpha(color, 10), color, borderColor: alpha(color, 25) }}>
       {value}
     </span>
   )
@@ -18,7 +19,7 @@ function OutcomePill({ outcome }: { outcome: string | null | undefined }) {
   const cfg = OUTCOME_CONFIGS.find(o => o.id === outcome)
   if (!cfg) return <span className="outcome-pill outcome-pill-empty">—</span>
   return (
-    <span className="outcome-pill" style={{ color: cfg.color, borderColor: `${cfg.color}40`, background: `${cfg.color}12` }}>
+    <span className="outcome-pill" style={{ color: cfg.color, borderColor: alpha(cfg.color, 25), background: alpha(cfg.color, 8) }}>
       {cfg.emoji} {cfg.shortLabel}
     </span>
   )
@@ -61,7 +62,9 @@ export default function Week() {
     if (serverRow) return serverRow
     const day   = getDayCache(date)
     const night = getNightCacheForDate(date)
-    return { ...day, ...(night ?? {}), day_outcome: night?.outcome ?? undefined }
+    if (!night) return day
+    const { emotions: ems, ...nightRest } = night
+    return { ...day, ...nightRest, day_outcome: night.outcome ?? undefined, emotions: ems?.join(',') || undefined }
   }
 
   const rowData = dates.map(date => ({ date, row: getRow(date) }))
@@ -207,7 +210,7 @@ export default function Week() {
                   ].map(s => (
                     <span key={s.label}
                       className="wk-score-chip"
-                      style={{ color: s.val ? s.color : 'var(--muted)', background: s.val ? `${s.color}12` : 'transparent' }}
+                      style={{ color: s.val ? s.color : 'var(--muted)', background: s.val ? alpha(s.color, 8) : 'transparent' }}
                     >
                       {s.val ?? '—'}
                     </span>
@@ -219,7 +222,7 @@ export default function Week() {
                   {isFuture
                     ? <span className="wk-outcome-empty">—</span>
                     : outcome
-                      ? <span className="wk-outcome-pill" style={{ color: outcome.color, background: `${outcome.color}14`, borderColor: `${outcome.color}35` }}>
+                      ? <span className="wk-outcome-pill" style={{ color: outcome.color, background: alpha(outcome.color, 8), borderColor: alpha(outcome.color, 22) }}>
                           {outcome.emoji} <span className="wk-outcome-label">{outcome.shortLabel}</span>
                         </span>
                       : <span className="wk-outcome-empty">—</span>

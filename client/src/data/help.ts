@@ -38,7 +38,7 @@ export const TABS_INFO: TabInfo[] = [
     how: 'Check your streak at top → tap any day row to expand → tap "Edit this day" to fix mistakes → use ← Prev for past weeks.',
   },
   {
-    icon: '🤖', name: 'Coach', color: '#ce93d8',
+    icon: '🤖', name: 'Coach', color: 'oklch(74% 0.18 280)',
     when: 'Once a week · on demand',
     what: 'Claude reads your last 30 days of BigQuery data and gives personalized coaching.',
     how: 'Tap "Generate my coaching report" → Claude analyzes patterns → review your score, patterns, and one specific action. Report cached 6 hours.',
@@ -50,7 +50,7 @@ export const TABS_INFO: TabInfo[] = [
     how: 'Tap "Photo / Image" to scan food → review AI estimates → confirm to log. Or "Manual entry" → type dish name → "Estimate" for AI or fill in manually.',
   },
   {
-    icon: '📈', name: 'Trends', color: '#f48fb1',
+    icon: '📈', name: 'Trends', color: 'oklch(72% 0.16 330)',
     when: 'After 1–2 weeks of data',
     what: '30-day charts for energy, focus, mood. Weekly win rate bars.',
     how: 'Check once a week. Read the insight above each chart. Only meaningful after several days of logging.',

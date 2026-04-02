@@ -32,9 +32,9 @@ export default function Auth({ onAuth }: Props) {
   return (
     <div className="auth-gate">
       <div className="auth-card">
-        <div className="auth-emoji">🦞</div>
+        <div className="auth-emoji">🎯</div>
         <h1 className="auth-title">DECODE</h1>
-        <p className="auth-tagline">Your daily direction system</p>
+        <p className="auth-tagline">Direction · Execute · Close · Observe · Develop · Evolve</p>
         <div className="auth-divider" />
         <p className="auth-label">Enter your access token to continue</p>
         <input
@@ -47,7 +47,7 @@ export default function Auth({ onAuth }: Props) {
           autoFocus
         />
         {error && <div className="auth-error">{error}</div>}
-        <button className="btn-primary" onClick={handleSubmit} disabled={loading} style={{width:'100%',marginTop:4}}>
+        <button className="btn-primary btn-full mt-2" onClick={handleSubmit} disabled={loading}>
           {loading ? <span className="spinner show" /> : null}
           {loading ? 'Checking...' : 'Enter'}
         </button>

@@ -1,7 +1,7 @@
 {
-  "name": "DECODE — Daily Direction System",
+  "name": "DECODE — Direction · Execute · Close · Observe · Develop · Evolve",
   "short_name": "DECODE",
-  "description": "Your personal daily tracking and coaching system",
+  "description": "Direction · Execute · Close · Observe · Develop · Evolve — your daily performance system",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0a0a0a",

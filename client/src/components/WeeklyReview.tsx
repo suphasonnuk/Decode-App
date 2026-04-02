@@ -4,6 +4,7 @@ import { api } from '../api'
 import { weekStartForOffset } from '../store'
 import { parseBQDate } from '../lib/dates'
 import { OUTCOME_CONFIGS } from '../data'
+import { alpha } from '../lib/color'
 import type { LogRow } from '../types'
 
 interface Props {
@@ -23,10 +24,12 @@ export default function WeeklyReview({ onDone, onTabChange }: Props) {
 
   const lastWeekStart = weekStartForOffset(-1)
 
+  const [loadError, setLoadError] = useState(false)
+
   useEffect(() => {
     api.getWeek(lastWeekStart)
       .then(rows => setLastWeekData(rows))
-      .catch(() => {})
+      .catch(() => setLoadError(true))
       .finally(() => setLoading(false))
   }, [])
 
@@ -35,7 +38,15 @@ export default function WeeklyReview({ onDone, onTabChange }: Props) {
     setTimeout(() => { setStep(to); setExiting(false) }, 180)
   }
 
+  const saveReviewToLocal = () => {
+    try {
+      const key = 'decode_weekly_review_' + lastWeekStart
+      localStorage.setItem(key, JSON.stringify({ lesson, anchorRatings, savedAt: new Date().toISOString() }))
+    } catch {}
+  }
+
   const finish = () => {
+    saveReviewToLocal()
     setExiting(true)
     setTimeout(() => { onTabChange('anchors'); onDone() }, 200)
   }
@@ -85,6 +96,8 @@ export default function WeeklyReview({ onDone, onTabChange }: Props) {
 
               {loading ? (
                 <div className="review-loading">Loading last week's data...</div>
+              ) : loadError ? (
+                <div className="review-no-data">Could not load last week's data — check your connection.</div>
               ) : (
                 <>
                   {/* Outcome row */}
@@ -92,7 +105,7 @@ export default function WeeklyReview({ onDone, onTabChange }: Props) {
                     {OUTCOME_CONFIGS.map(o => {
                       const count = o.id === 'win' ? wins : o.id === 'partial' ? partials : misses
                       return (
-                        <div key={o.id} className="review-outcome-box" style={{ borderColor: `${o.color}40` }}>
+                        <div key={o.id} className="review-outcome-box" style={{ borderColor: alpha(o.color, 25) }}>
                           <div className="review-outcome-emoji">{o.emoji}</div>
                           <div className="review-outcome-count" style={{ color: o.color }}>{count}</div>
                           <div className="review-outcome-label">{o.label}</div>
@@ -142,7 +155,7 @@ export default function WeeklyReview({ onDone, onTabChange }: Props) {
                 </>
               )}
 
-              <button className="btn-primary" style={{ width: '100%', marginTop: 20 }} onClick={() => next('anchors')}>
+              <button className="btn-primary btn-full mt-4" onClick={() => next('anchors')}>
                 Next → Anchor review
               </button>
             </div>
@@ -177,9 +190,9 @@ export default function WeeklyReview({ onDone, onTabChange }: Props) {
                 ))}
               </div>
 
-              <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>
-                <button className="btn-secondary" style={{ flex: 1 }} onClick={() => next('summary')}>← Back</button>
-                <button className="btn-primary"   style={{ flex: 2 }} onClick={() => next('lesson')}>Next → Lesson</button>
+              <div className="review-btn-row">
+                <button className="btn-secondary review-btn-back" onClick={() => next('summary')}>← Back</button>
+                <button className="btn-primary review-btn-next" onClick={() => next('lesson')}>Next → Lesson</button>
               </div>
             </div>
           )}
@@ -192,18 +205,17 @@ export default function WeeklyReview({ onDone, onTabChange }: Props) {
               <div className="review-desc">Looking at last week — what's the one thing you'd do differently, or the one thing that worked really well?</div>
 
               <textarea
-                className="field-textarea"
+                className="field-textarea mt-3"
                 rows={4}
                 value={lesson}
                 onChange={e => setLesson(e.target.value)}
                 placeholder="e.g. I hit WIN days when I did gym in the morning, not evening..."
-                style={{ marginTop: 12 }}
                 autoFocus
               />
 
-              <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
-                <button className="btn-secondary" style={{ flex: 1 }} onClick={() => next('anchors')}>← Back</button>
-                <button className="btn-primary"   style={{ flex: 2 }} onClick={() => next('set-anchors')}>Next → Set anchors</button>
+              <div className="review-btn-row">
+                <button className="btn-secondary review-btn-back" onClick={() => next('anchors')}>← Back</button>
+                <button className="btn-primary review-btn-next" onClick={() => next('set-anchors')}>Next → Set anchors</button>
               </div>
             </div>
           )}
@@ -222,14 +234,10 @@ export default function WeeklyReview({ onDone, onTabChange }: Props) {
                 Now set your 3 anchors for the coming week with that lesson in mind.
               </div>
 
-              <button
-                className="btn-primary"
-                style={{ width: '100%', marginTop: 20 }}
-                onClick={finish}
-              >
+              <button className="btn-primary btn-full mt-4" onClick={finish}>
                 Go to Anchors tab →
               </button>
-              <button className="btn-secondary" style={{ width: '100%', marginTop: 8 }} onClick={onDone}>
+              <button className="btn-secondary btn-full-mt" onClick={() => { saveReviewToLocal(); onDone() }}>
                 Skip — set anchors later
               </button>
             </div>
@@ -238,7 +246,7 @@ export default function WeeklyReview({ onDone, onTabChange }: Props) {
         </div>
 
         {/* Close */}
-        <button className="review-close" onClick={onDone}>✕</button>
+        <button className="review-close" onClick={() => { saveReviewToLocal(); onDone() }}>✕</button>
       </div>
     </div>
   )

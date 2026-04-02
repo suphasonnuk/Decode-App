@@ -1,0 +1,44 @@
+DECODE App — Version 2 Changed Files
+=====================================
+Date: 2026-03-28
+
+Features Added:
+1. Mood/Energy Heatmap (GitHub-style 90-day calendar on Trends tab)
+2. Habit Streaks Dashboard (individual work/future/body streak rings on Dashboard)
+3. Morning Intention (freeform text prompt on Today tab)
+4. Evening Gratitude (freeform text prompt on Night tab)
+5. Export/Backup (download data as CSV/JSON from Profile)
+6. Focus Timer (Pomodoro 25/5 timer on Today tab)
+7. Dark Mode Toggle (theme switcher with full light mode)
+
+Changed Files:
+--------------
+1. client/index.html          → version2/index.html.txt
+   - Added inline theme script to prevent flash on load
+
+2. client/src/App.tsx         → version2/App.tsx.txt
+   - Added dark/light theme state, toggle button, localStorage persistence
+
+3. client/src/components/Trends.tsx  → version2/Trends.tsx.txt
+   - Added Heatmap component (90-day grid, energy/focus/mood toggle)
+
+4. client/src/components/Dashboard.tsx → version2/Dashboard.tsx.txt
+   - Added ExportBackup component (CSV/JSON download)
+   - Added Habit Streaks section (SVG progress rings)
+
+5. client/src/components/Today.tsx  → version2/Today.tsx.txt
+   - Added FocusTimer component (Pomodoro with SVG ring)
+   - Added Morning Intention card with localStorage persistence
+
+6. client/src/components/Night.tsx  → version2/Night.tsx.txt
+   - Added Evening Gratitude card with localStorage persistence
+
+7. client/src/index.css       → version2/index.css.txt
+   - Added styles for: heatmap, habit streaks, focus timer, intention/gratitude,
+     export buttons, theme toggle, full light theme ([data-theme="light"])
+
+Bugs Fixed:
+-----------
+- TSC error: invalid escape sequence in JSX placeholder string
+- Stale closure bug: FocusTimer interval capturing stale isBreak value (fixed with useRef)
+- Unused variable: removed unused metricColor in Heatmap component

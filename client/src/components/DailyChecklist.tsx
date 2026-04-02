@@ -256,16 +256,16 @@ function getHeaderMessage(s: ReturnType<typeof getDailyStatus>, pct: number) {
     return { emoji: '😅', title: 'Late check-in', sub: 'You can still log today and close the day. Better late than never.' }
   }
 
-  return { emoji: '🦞', title: 'Here\'s your checklist', sub: 'Complete the tasks below to finish your day.' }
+  return { emoji: '📋', title: 'Here\'s your checklist', sub: 'Complete the tasks below to finish your day.' }
 }
 
 // ── Urgency styles ────────────────────────────────────────────────────────────
 const URGENCY_BADGE_STYLE: Record<string, { bg: string; color: string }> = {
   chill:   { bg: 'oklch(72% 0.12 220 / 0.12)',  color: 'var(--work)'    },
-  normal:  { bg: 'oklch(82% 0.14 85 / 0.15)',   color: 'var(--accent)'  },
-  urgent:  { bg: 'oklch(76% 0.14 60 / 0.2)',    color: 'var(--partial)' },
-  overdue: { bg: 'oklch(62% 0.20 25 / 0.18)',   color: 'var(--miss)'    },
-  none:    { bg: 'oklch(95% 0.008 75 / 0.06)',  color: 'var(--muted2)'  },
+  normal:  { bg: 'oklch(74% 0.18 280 / 0.15)',   color: 'var(--accent)'  },
+  urgent:  { bg: 'oklch(78% 0.16 80 / 0.2)',    color: 'var(--partial)' },
+  overdue: { bg: 'oklch(64% 0.22 25 / 0.18)',   color: 'var(--miss)'    },
+  none:    { bg: 'oklch(94% 0.006 260 / 0.06)', color: 'var(--muted2)'  },
   Tonight: { bg: 'oklch(76% 0.12 150 / 0.1)',   color: 'var(--body)'    },
 }
 

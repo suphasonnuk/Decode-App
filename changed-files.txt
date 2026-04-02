@@ -1,0 +1,44 @@
+DECODE App — Files Changed After Sugar Tracker Feature
+======================================================
+Generated: 2026-03-28
+
+Session 1: Bug Review & Fixes (20 bugs across 10 files)
+--------------------------------------------------------
+client/src/App.tsx                      — Timer leak fixes (midnight, toast), weekly review key fix (monthly→weekly)
+client/src/store.ts                     — try/catch wrappers on auth functions for private browsing
+client/src/components/Decode.tsx        — Separate portraitError state (prevent full-page blowup)
+client/src/components/Night.tsx         — userTouched ref to prevent BQ overwriting input, auto-save drafts
+client/src/components/DailyStatus.tsx   — Fixed ReactNode import
+client/src/components/Week.tsx          — ScoreBadge null check (value 0 was treated as falsy)
+client/src/components/WeeklyReview.tsx  — loadError state, save lesson/ratings to localStorage
+client/src/components/ChallengePopup.tsx — Timer cleanup on unmount, sessionStorage→localStorage
+client/src/components/Dashboard.tsx     — useCallback import, stable onNewAchRef, null check fix
+src/routes.ts                          — JSON.parse try/catch, parseInt radix, division-by-zero guard,
+                                          nutrition deleted filter, ownership verification (PUT/DELETE),
+                                          push endpoint 503 when SCHEDULER_SECRET missing
+src/index.ts                           — trust proxy for Cloud Run
+
+Session 2: UX Improvements (5 fixes)
+-------------------------------------
+client/src/App.tsx                      — Weekly review frequency: monthly → weekly
+client/src/components/Night.tsx         — userTouched expanded to all form interactions, auto-save draft to localStorage
+client/src/components/ChallengePopup.tsx — sessionStorage → localStorage (persists dismissal within same day)
+client/src/lib/challenge.ts            — sessionStorage → localStorage (matches ChallengePopup change)
+client/src/components/WeeklyReview.tsx  — Save lesson + anchor ratings to localStorage on all exit paths
+client/src/components/DailyStatus.tsx   — Improved messaging: removed "come back tonight", made action-oriented
+
+All Changed/New Files (complete list)
+-------------------------------------
+Modified:
+  client/src/App.tsx
+  client/src/store.ts
+  client/src/components/ChallengePopup.tsx
+  client/src/components/DailyStatus.tsx
+  client/src/components/Dashboard.tsx
+  client/src/components/Decode.tsx
+  client/src/components/Night.tsx
+  client/src/components/Week.tsx
+  client/src/components/WeeklyReview.tsx
+  client/src/lib/challenge.ts
+  src/index.ts
+  src/routes.ts

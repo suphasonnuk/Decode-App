@@ -39,6 +39,7 @@ export interface LogPayload {
   energy_level: number
   focus_level?: number | null
   mood_level?: number | null
+  emotions?: string | null            // comma-separated emotion IDs (e.g. "calm,proud,focused")
   day_outcome?: DayOutcome | null
   tomorrow_action?: string | null
   reflection?: string | null          // NEW: optional end-of-day note

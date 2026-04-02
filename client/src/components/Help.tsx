@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { TABS_INFO, SCORES_INFO, OUTCOMES_INFO, DAILY_RHYTHM, FAQS, TIPS } from '../data/help'
+import { alpha } from '../lib/color'
 
 export default function Help() {
   const [openFaq, setOpenFaq] = useState<number | null>(null)
@@ -9,9 +10,25 @@ export default function Help() {
 
       {/* ── Hero ── */}
       <div className="help-hero">
-        <span className="help-hero-emoji">🦞</span>
+        <span className="help-hero-emoji">📖</span>
         <div className="help-hero-title">DECODE Manual</div>
-        <div className="help-hero-sub">Everything you need in one place</div>
+        <div className="help-hero-sub">Direction · Execute · Close · Observe · Develop · Evolve</div>
+      </div>
+
+      {/* ── The DECODE framework ── */}
+      <div className="help-section-block">
+        <div className="help-section-eyebrow">The framework</div>
+        <div className="help-big-text">
+          DECODE is an acronym. Each letter is a step in your daily and weekly cycle.
+        </div>
+        <div className="help-decode-steps">
+          <div className="help-decode-step"><span className="help-decode-letter" style={{ color: 'var(--work)' }}>D</span><div><strong>Direction</strong> — Pick one task each for Work, Future, Body. Know what matters today.</div></div>
+          <div className="help-decode-step"><span className="help-decode-letter" style={{ color: 'var(--future)' }}>E</span><div><strong>Execute</strong> — Go do the work. The app stays out of your way until evening.</div></div>
+          <div className="help-decode-step"><span className="help-decode-letter" style={{ color: 'var(--body)' }}>C</span><div><strong>Close</strong> — Rate the day: WIN, PARTIAL, or MISS. Score focus and mood. Be honest.</div></div>
+          <div className="help-decode-step"><span className="help-decode-letter" style={{ color: 'var(--accent)' }}>O</span><div><strong>Observe</strong> — Your dashboard and trends reveal patterns you can't see day-to-day.</div></div>
+          <div className="help-decode-step"><span className="help-decode-letter" style={{ color: 'var(--partial)' }}>D</span><div><strong>Develop</strong> — Use weekly anchors and AI coaching to build on what works.</div></div>
+          <div className="help-decode-step"><span className="help-decode-letter" style={{ color: 'var(--win)' }}>E</span><div><strong>Evolve</strong> — Week over week, small corrections compound into real change.</div></div>
+        </div>
       </div>
 
       {/* ── The core idea ── */}
@@ -39,7 +56,7 @@ export default function Help() {
 
         {TABS_INFO.map(t => (
           <div className="help-tab-row" key={t.name}>
-            <div className="help-tab-row-icon" style={{ background: `${t.color}18`, border: `1px solid ${t.color}30` }}>
+            <div className="help-tab-row-icon" style={{ background: alpha(t.color, 10), border: `1px solid ${alpha(t.color, 20)}` }}>
               <span>{t.icon}</span>
             </div>
             <div className="help-tab-row-body">
@@ -63,8 +80,8 @@ export default function Help() {
 
         <div className="help-scores-grid">
           {SCORES_INFO.map(s => (
-            <div className="help-score-card" key={s.label} style={{ borderColor: `${s.color}30` }}>
-              <div className="help-score-card-top" style={{ background: `${s.color}10` }}>
+            <div className="help-score-card" key={s.label} style={{ borderColor: alpha(s.color, 20) }}>
+              <div className="help-score-card-top" style={{ background: alpha(s.color, 6) }}>
                 <span className="help-score-icon">{s.icon}</span>
                 <div>
                   <div className="help-score-label" style={{ color: s.color }}>{s.label}</div>
@@ -124,8 +141,8 @@ export default function Help() {
             ],
           },
         ].map(f => (
-          <div className="help-ai-card" key={f.title} style={{ borderColor: `${f.color}30` }}>
-            <div className="help-ai-header" style={{ background: `${f.color}10` }}>
+          <div className="help-ai-card" key={f.title} style={{ borderColor: alpha(f.color, 20) }}>
+            <div className="help-ai-header" style={{ background: alpha(f.color, 6) }}>
               <span className="help-ai-icon">{f.icon}</span>
               <div className="help-ai-title" style={{ color: f.color }}>{f.title}</div>
             </div>
@@ -150,7 +167,7 @@ export default function Help() {
           {DAILY_RHYTHM.map((r, i) => (
             <div className="help-rhythm-row" key={i}>
               <div className="help-rhythm-left">
-                <div className="help-rhythm-dot" style={{ background: r.color, boxShadow: `0 0 8px ${r.color}50` }} />
+                <div className="help-rhythm-dot" style={{ background: r.color, boxShadow: `0 0 8px ${alpha(r.color, 30)}` }} />
                 {i < DAILY_RHYTHM.length - 1 && <div className="help-rhythm-line" />}
               </div>
               <div className="help-rhythm-content">
@@ -213,7 +230,7 @@ export default function Help() {
       </div>
 
       <div className="help-footer">
-        Built for people who want results, not more apps.
+        Direction · Execute · Close · Observe · Develop · Evolve
       </div>
     </div>
   )

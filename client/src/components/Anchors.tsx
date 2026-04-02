@@ -89,8 +89,7 @@ export default function Anchors({ onSaved }: Props) {
       ))}
 
       <button
-        className={saved ? 'btn-success' : 'btn-primary'}
-        style={{ width: '100%', marginTop: 8 }}
+        className={`${saved ? 'btn-success' : 'btn-primary'} btn-full-mt`}
         onClick={handleSave}
       >
         {saved ? '✓ Anchors Saved' : 'Save Anchors'}

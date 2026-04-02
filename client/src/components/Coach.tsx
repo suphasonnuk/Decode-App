@@ -107,10 +107,10 @@ export default function Coach() {
           <div className="coach-welcome-desc">
             Claude reads your last 30 days of data from BigQuery — energy, focus, mood, task completion, outcomes — and gives you personalized pattern analysis and one specific action for this week.
           </div>
-          <button className="btn-primary" style={{ width: '100%', marginTop: 20 }} onClick={() => fetchCoaching()}>
+          <button className="btn-primary coach-welcome-btn" onClick={() => fetchCoaching()}>
             Generate my coaching report →
           </button>
-          <p style={{ fontSize: 10, color: 'var(--muted2)', marginTop: 10, textAlign: 'center', lineHeight: 1.5 }}>
+          <p className="coach-welcome-hint">
             Requires ANTHROPIC_API_KEY set in Cloud Run environment variables.
           </p>
         </div>
@@ -133,7 +133,7 @@ export default function Coach() {
           <div className="coach-error-icon">⚠️</div>
           <div className="coach-error-title">Coach unavailable</div>
           <div className="coach-error-msg">{error}</div>
-          <button className="btn-secondary" style={{ marginTop: 14 }} onClick={() => fetchCoaching(true)}>
+          <button className="btn-secondary mt-3" onClick={() => fetchCoaching(true)}>
             Try again
           </button>
         </div>
@@ -184,12 +184,12 @@ export default function Coach() {
           </div>
 
           {/* Refresh */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 14 }}>
+          <div className="coach-refresh-wrap">
             <button className="btn-secondary" onClick={() => fetchCoaching(true)}>
               ↻ Refresh coaching report
             </button>
           </div>
-          <p style={{ fontSize: 9, color: 'var(--muted)', textAlign: 'center', marginTop: 8 }}>
+          <p className="coach-refresh-hint">
             Report cached for 6 hours · Each refresh uses your Anthropic API quota
           </p>
         </div>

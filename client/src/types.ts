@@ -23,6 +23,7 @@ export interface LogPayload {
   energy_level: number
   focus_level?: number | null
   mood_level?: number | null
+  emotions?: string | null          // comma-separated emotion IDs (e.g. "calm,proud,focused")
   day_outcome?: DayOutcome | null
   tomorrow_action?: string | null
   reflection?: string | null
@@ -56,4 +57,4 @@ export interface HealthResponse {
   auth: boolean
 }
 
-export type Tab = 'anchors' | 'daily' | 'night' | 'week' | 'trends'
+export type Tab = 'anchors' | 'daily' | 'night' | 'week' | 'trends' | 'dashboard' | 'help' | 'coach' | 'nutrition' | 'coffee' | 'decode'
