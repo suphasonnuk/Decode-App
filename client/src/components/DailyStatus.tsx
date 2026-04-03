@@ -36,7 +36,6 @@ export default function DailyStatus({ onTabChange, activeTab, streak }: Props) {
     { key: 'tasks',   done: allTasksDone,  icon: '✅', color: 'var(--future)' },
     { key: 'night',   done: nightDone,     icon: '🌙', color: 'var(--body)'   },
   ]
-  const completedSteps = steps.filter(s => s.done).length
 
   // Determine the primary action and message
   let icon = '☀️'

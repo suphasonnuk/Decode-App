@@ -77,7 +77,7 @@ const COFFEE_TYPES: CoffeeType[] = [
       time_s: ROAST_TIME[roast],
       notes: 'Add water to cup first, then espresso — preserves crema on top',
     }),
-    getMethod: (roast, r) => [
+    getMethod: (_roast, r) => [
       `Pull espresso: ${r.dose_g}g in → ${r.yield_g}g out in ${r.time_s} at ${r.temp_c}°C`,
       `Pour 120ml hot water (off-boil, ~96°C) into your cup first`,
       `Pour espresso over the water — crema floats on top`,
@@ -98,7 +98,7 @@ const COFFEE_TYPES: CoffeeType[] = [
       time_s: ROAST_TIME[roast],
       notes: 'Milk at 65°C — any hotter kills sweetness. Full-fat gives best microfoam texture.',
     }),
-    getMethod: (roast, r) => [
+    getMethod: (_roast, r) => [
       `Pull espresso: ${r.dose_g}g in → ${r.yield_g}g out in ${r.time_s} at ${r.temp_c}°C`,
       'Steam 200ml whole milk to 65°C — submerge tip just below surface, swirl',
       'Aim for glossy, paint-like microfoam — no large bubbles',
@@ -120,7 +120,7 @@ const COFFEE_TYPES: CoffeeType[] = [
       time_s: ROAST_TIME[roast],
       notes: 'Ristretto stops early — sweeter, more concentrated, less bitter than full espresso',
     }),
-    getMethod: (roast, r) => [
+    getMethod: (_roast, r) => [
       `Pull ristretto: ${r.dose_g}g in → ${r.yield_g}g out (stop early) in ${r.time_s}`,
       `Temperature: ${r.temp_c}°C — slightly higher to compensate for shorter extraction`,
       'Steam 120ml whole milk to 60–65°C — tighter, velvety microfoam',
@@ -141,7 +141,7 @@ const COFFEE_TYPES: CoffeeType[] = [
       time_s: ROAST_TIME[roast],
       notes: 'Classic Italian: 60ml espresso + 60ml steamed milk + 60ml foam in a 180ml cup',
     }),
-    getMethod: (roast, r) => [
+    getMethod: (_roast, r) => [
       `Pull espresso: ${r.dose_g}g in → ${r.yield_g}g out (~60ml) in ${r.time_s} at ${r.temp_c}°C`,
       'Steam 150ml whole milk — more air than latte, aim for thick glossy foam',
       'Temperature 60–65°C — stop steaming earlier to keep more foam',
