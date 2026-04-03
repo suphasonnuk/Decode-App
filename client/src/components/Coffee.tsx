@@ -168,6 +168,11 @@ interface CoffeeLog {
   yield_g:     number | null
 }
 
+const COFFEE_ICON: Record<string, string> = {
+  espresso: '☕', americano: '🖤', latte: '🥛', flat_white: '🤍', cappuccino: '💫',
+}
+const ROAST_LABEL: Record<string, string> = { light: 'Light', medium: 'Medium', dark: 'Dark' }
+
 interface Props { onToast: (msg: string, err?: boolean) => void }
 
 export default function Coffee({ onToast }: Props) {
@@ -184,7 +189,7 @@ export default function Coffee({ onToast }: Props) {
       .then(data => setTodayLogs(data || []))
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [])
+  }, [userId])
 
   const selectedType = COFFEE_TYPES.find(t => t.id === selected)
   const recipe = selectedType ? selectedType.getRecipe(roast) : null
@@ -213,11 +218,6 @@ export default function Coffee({ onToast }: Props) {
       setSaving(false)
     }
   }
-
-  const coffeeIcon: Record<string, string> = {
-    espresso: '☕', americano: '🖤', latte: '🥛', flat_white: '🤍', cappuccino: '💫',
-  }
-  const roastLabel: Record<string, string> = { light: 'Light', medium: 'Medium', dark: 'Dark' }
 
   return (
     <div>
@@ -277,7 +277,7 @@ export default function Coffee({ onToast }: Props) {
                   {selectedType.name}
                 </div>
                 <div className="coffee-recipe-roast">
-                  {roastLabel[roast]} roast · {recipe.temp_c}°C
+                  {ROAST_LABEL[roast]} roast · {recipe.temp_c}°C
                 </div>
               </div>
             </div>
@@ -352,14 +352,14 @@ export default function Coffee({ onToast }: Props) {
           {todayLogs.map((log, i) => (
             <div key={log.entry_id ?? i} className="coffee-log-row">
               <span className="coffee-log-icon">
-                {coffeeIcon[log.coffee_type] ?? '☕'}
+                {COFFEE_ICON[log.coffee_type] ?? '☕'}
               </span>
               <div className="coffee-log-body">
                 <div className="coffee-log-name coffee-log-name-cap">
                   {log.coffee_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </div>
                 <div className="coffee-log-meta">
-                  {roastLabel[log.roast] ?? log.roast} roast
+                  {ROAST_LABEL[log.roast] ?? log.roast} roast
                   {log.dose_g ? ` · ${log.dose_g}g` : ''}
                   {log.yield_g ? ` → ${log.yield_g}g` : ''}
                 </div>

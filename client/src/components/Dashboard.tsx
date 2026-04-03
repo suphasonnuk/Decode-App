@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import type { Tab, LogRow } from '../types'
 import type { Achievement, UserStats } from '../achievements'
 import type { UserProfile } from '../store'
@@ -305,17 +305,23 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
     }
   }
 
-  // Computed stats
-  const daysWithOutcome = weekData.filter(r => r.day_outcome)
-  const wins            = daysWithOutcome.filter(r => r.day_outcome === 'win').length
-  const winRateWeek     = daysWithOutcome.length > 0 ? Math.round((wins/daysWithOutcome.length)*100) : null
-  const avgOf = (key: keyof LogRow) => {
-    const vals = weekData.map(r => r[key]).filter((v): v is number => typeof v === 'number' && v > 0)
-    return vals.length ? Math.round((vals.reduce((a:number,b:number)=>a+b,0)/vals.length)*10)/10 : null
-  }
-  const avgEnergy = avgOf('energy_level')
-  const avgFocus  = avgOf('focus_level')
-  const avgMood   = avgOf('mood_level')
+  // Computed stats — memoized so profile-form keystrokes don't re-run these
+  const { wins, winRateWeek, avgEnergy, avgFocus, avgMood } = useMemo(() => {
+    const daysWithOutcome = weekData.filter(r => r.day_outcome)
+    const wins            = daysWithOutcome.filter(r => r.day_outcome === 'win').length
+    const winRateWeek     = daysWithOutcome.length > 0 ? Math.round((wins / daysWithOutcome.length) * 100) : null
+    const avgOf = (key: keyof LogRow) => {
+      const vals = weekData.map(r => r[key]).filter((v): v is number => typeof v === 'number' && v > 0)
+      return vals.length ? Math.round((vals.reduce((a: number, b: number) => a + b, 0) / vals.length) * 10) / 10 : null
+    }
+    return {
+      wins,
+      winRateWeek,
+      avgEnergy: avgOf('energy_level'),
+      avgFocus:  avgOf('focus_level'),
+      avgMood:   avgOf('mood_level'),
+    }
+  }, [weekData])
 
   const lossMsg    = getLossMessage(streak?.current ?? 0, nightDone, hour)
   const streakRisk = getStreakRisk(hour, nightDone)
@@ -340,7 +346,7 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
     },
     {
       label: 'Meal logged',     done: mealLogged,    icon: '🥗',
-      tab: 'nutrition' as any,  sub: mealLogged ? 'Logged ✓' : 'Log meal',
+      tab: 'nutrition' as Tab,  sub: mealLogged ? 'Logged ✓' : 'Log meal',
     },
     {
       label: 'Day closed',      done: nightDone,     icon: '🌙',
@@ -349,28 +355,33 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
   ]
   const todayPct = Math.round((todaySteps.filter(s=>s.done).length / todaySteps.length) * 100)
 
-  const dates       = weekDates()
+  // weekDates is stable within a day (component remounts at midnight)
+  const dates         = useMemo(() => weekDates(), [])
   const todayLocalStr = todayStr()
 
-  const stats: UserStats = {
-    currentStreak: streak?.current ?? 0,
-    winRatePct: winRateWeek ?? 0,
-    avgEnergy: avgEnergy ?? 0,
-    totalWins: wins,
-    longestStreak: streak?.longest30 ?? 0,
-  }
-  const unlockedAch = getUnlockedAchievements(stats)
-  const lockedAch   = ALL_ACHIEVEMENTS.filter(a => !unlockedAch.find(u=>u.id===a.id)).slice(0,4)
+  const { stats, unlockedAch, lockedAch } = useMemo(() => {
+    const stats: UserStats = {
+      currentStreak: streak?.current ?? 0,
+      winRatePct:    winRateWeek ?? 0,
+      avgEnergy:     avgEnergy ?? 0,
+      totalWins:     wins,
+      longestStreak: streak?.longest30 ?? 0,
+    }
+    const unlockedAch = getUnlockedAchievements(stats)
+    const lockedAch   = ALL_ACHIEVEMENTS.filter(a => !unlockedAch.find(u => u.id === a.id)).slice(0, 4)
+    return { stats, unlockedAch, lockedAch }
+  }, [streak, winRateWeek, avgEnergy, wins])
 
-  const greeting = () => getGreeting(hour)
+  const greeting = getGreeting(hour)
 
   // userAge removed from profile card — kept in profile editor only
 
   // ── Render: Profile editor ──────────────────────────────────────────────────
-  // Pre-compute TDEE preview (avoids IIFE inside JSX which some bundlers reject)
-  const t = (profDraft.height_cm && profDraft.weight_kg && profDraft.birth_year)
-    ? calculateNutritionTargets(profDraft)
-    : null
+  // Memoized: only recomputes when nutrition-relevant fields change, not on every keystroke
+  const t = useMemo(() => {
+    if (!profDraft.height_cm || !profDraft.weight_kg || !profDraft.birth_year) return null
+    return calculateNutritionTargets(profDraft)
+  }, [profDraft.height_cm, profDraft.weight_kg, profDraft.birth_year, profDraft.exercise_days_per_week, profDraft.fitness_goal, profDraft.gender])
   const tdeePreview = t ? (
     <div className="prof-tdee-card">
       <div className="prof-tdee-title">📊 Your personalized daily targets</div>
@@ -619,7 +630,7 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
         </div>
       </div>
 
-      {profError && <div className="prof-error">{profError}</div>}
+      {profError && <div className="prof-error" role="alert">{profError}</div>}
 
       {/* TDEE preview — pre-computed above as tdeePreview */}
       {tdeePreview}
@@ -661,7 +672,7 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
         <div className="dash-profile-right">
           <div className="dash-greeting">
             <span className="dash-greeting-text">
-              {profile.name ? profile.name : greeting()}
+              {profile.name ? profile.name : greeting}
             </span>
             {!profile.name && (
               <span className="dash-name-hint" style={{ color: 'var(--accent)' }}>Tap to set name →</span>
@@ -707,7 +718,7 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
             <div
               key={s.label}
               className={`dash-today-step ${s.done?'done':''}`}
-              onClick={e => { e.stopPropagation(); onTabChange(s.tab as any) }}
+              onClick={e => { e.stopPropagation(); onTabChange(s.tab) }}
             >
               <div className={`dash-today-check ${s.done?'done':''}`}>{s.done?'✓':''}</div>
               <div className="dash-today-step-body">
@@ -731,7 +742,7 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
       {lossMsg && (
         <div
           className={`dash-loss-banner ${lossMsg.urgent ? 'dash-loss-urgent' : ''}`}
-          style={{ borderColor: lossMsg.urgent ? 'oklch(62% 0.20 25 / 0.4)' : 'oklch(76% 0.14 60 / 0.3)' }}
+          style={{ borderColor: lossMsg.urgent ? alpha('var(--miss)', 40) : alpha('var(--partial)', 30) }}
           onClick={() => onTabChange('night')}
         >
           <div className="dash-loss-left">

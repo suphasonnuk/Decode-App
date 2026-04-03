@@ -1664,7 +1664,7 @@ select option { background: oklch(13% 0.012 260); }
   padding: 12px 20px 40px;
   width: 100%; max-width: 540px;
   max-height: 88vh; overflow-y: auto;
-  animation: sheetUp 0.25s cubic-bezier(0.34, 1.2, 0.64, 1) both;
+  animation: sheetUp 0.28s var(--ease-out-expo) both;
   box-shadow: var(--shadow-lg);
 }
 @keyframes sheetUp {
@@ -1701,7 +1701,7 @@ select option { background: oklch(13% 0.012 260); }
 }
 .checklist-progress-fill {
   height: 100%; border-radius: 3px;
-  transition: width 0.6s cubic-bezier(0.34, 1.2, 0.64, 1);
+  transition: width 0.5s var(--ease-out-quint);
   min-width: 3px;
 }
 .checklist-progress-label {
@@ -1746,12 +1746,11 @@ select option { background: oklch(13% 0.012 260); }
   font-size: 11px; color: oklch(8% 0.012 260); font-weight: bold;
 }
 .checklist-check-done {
-  animation: checkBounce 0.3s cubic-bezier(0.34, 1.6, 0.64, 1) both;
+  animation: checkBounce 0.3s var(--ease-out-quint) both;
 }
 @keyframes checkBounce {
-  0%   { transform: scale(0.5); opacity: 0; }
-  60%  { transform: scale(1.15); }
-  100% { transform: scale(1); opacity: 1; }
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
 }
 
 .checklist-item-body { flex: 1; min-width: 0; }
@@ -1942,10 +1941,7 @@ select option { background: oklch(13% 0.012 260); }
 .dash-streak-fire { font-size: 26px; }
 .dash-streak-num  {
   font-family: var(--font-display); font-weight: 800; font-size: var(--text-3xl);
-  background: var(--gradient-accent);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--accent);
   line-height: 1;
 }
 .dash-streak-label{ font-size: 10px; color: var(--muted2); margin-top: 2px; }
@@ -1960,7 +1956,7 @@ select option { background: oklch(13% 0.012 260); }
 .dash-streak-risk-label { font-size: 9px; color: var(--miss); letter-spacing: 0.3px; }
 .streak-freeze-hint {
   display: flex; align-items: center; gap: 8px;
-  padding: 8px 14px; margin-bottom: 10px;
+  padding: 8px 14px;
   font-size: 11px; color: var(--muted2);
   background: oklch(72% 0.12 220 / 0.06);
   border-radius: var(--radius-sm);
@@ -2021,7 +2017,7 @@ select option { background: oklch(13% 0.012 260); }
   font-size: 10px; font-weight: bold; color: oklch(8% 0.012 260);
   flex-shrink: 0; transition: all 0.2s ease;
 }
-.dash-today-check.done { background: var(--win); border-color: var(--win); animation: checkBounce 0.3s cubic-bezier(0.34,1.6,0.64,1) both; }
+.dash-today-check.done { background: var(--win); border-color: var(--win); animation: checkBounce 0.3s var(--ease-out-quint) both; }
 .dash-today-step-icon  { font-size: 14px; }
 .dash-today-step-label { font-size: 12px; }
 .dash-today-step.done .dash-today-step-label { text-decoration: line-through; }
@@ -2120,7 +2116,7 @@ select option { background: oklch(13% 0.012 260); }
   text-align: center; width: 100%; max-width: 320px;
   position: relative; overflow: hidden;
   opacity: 0; transform: scale(0.8) translateY(20px);
-  transition: all 0.4s cubic-bezier(0.34,1.6,0.64,1);
+  transition: all 0.4s var(--ease-out-expo);
 }
 .achievement-overlay.achievement-visible .achievement-popup {
   opacity: 1; transform: scale(1) translateY(0);
@@ -2651,7 +2647,7 @@ select option { background: oklch(13% 0.012 260); }
   border-bottom: none; border-radius: 20px 20px 0 0;
   padding: 16px 20px 40px; width: 100%; max-width: 540px;
   max-height: 90vh; overflow-y: auto; position: relative;
-  animation: sheetUp 0.3s cubic-bezier(0.34,1.2,0.64,1) both;
+  animation: sheetUp 0.32s var(--ease-out-expo) both;
 }
 .review-progress {
   display: flex; gap: 6px; justify-content: center; margin-bottom: 20px;
@@ -2761,7 +2757,8 @@ select option { background: oklch(13% 0.012 260); }
 }
 .nutr-macro-bar-fill {
   height: 100%; border-radius: 3px; min-width: 2px;
-  transition: width 0.5s cubic-bezier(0.34, 1.2, 0.64, 1);
+  transition: width 0.5s var(--ease-out-quint);
+  transform-origin: left center; /* barGrow animation uses scaleX */
 }
 .nutr-macro-nums  { display: flex; align-items: baseline; gap: 1px; width: 70px; flex-shrink: 0; justify-content: flex-end; }
 .nutr-macro-val   { font-family: var(--font-display); font-weight: 700; font-size: 13px; }
@@ -3114,10 +3111,11 @@ input:disabled, select:disabled, textarea:disabled {
   background: var(--accent);
   border-radius: var(--radius-pill);
   animation: tabPillIn 0.2s var(--ease-out-quint) both;
+  transform-origin: center;
 }
 @keyframes tabPillIn {
-  from { width: 0; opacity: 0; }
-  to   { width: 28px; opacity: 1; }
+  from { transform: scaleX(0); opacity: 0; }
+  to   { transform: scaleX(1); opacity: 1; }
 }
 
 .bottom-tab-icon  {

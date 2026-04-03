@@ -75,7 +75,7 @@
   to   { opacity: 1; transform: scaleY(1); transform-origin: top; }
 }
 @keyframes barGrow {
-  from { width: 0; }
+  from { transform: scaleX(0); }
 }
 
 /* ── Splash screen — premium loading ─────────────── */
@@ -149,7 +149,11 @@
     border-color var(--t-base) var(--ease);
 }
 .done-btn {
-  transition: all var(--t-base) var(--ease);
+  transition:
+    background var(--t-base) var(--ease),
+    border-color var(--t-base) var(--ease),
+    color var(--t-base) var(--ease),
+    transform var(--t-fast) var(--ease);
 }
 .done-btn:active     { transform: scale(0.94); }
 .done-btn-active     { animation: scaleIn 0.2s var(--ease-out-quint) both; }
@@ -184,18 +188,21 @@
 .tab-btn::after {
   content: '';
   display: block;
-  height: 2px; width: 0;
+  height: 2px; width: 100%; /* full width, scale controls visibility */
   background: var(--accent);
   border-radius: 1px;
   margin-top: 3px;
-  transition: width var(--t-base) var(--ease);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--t-base) var(--ease);
 }
-.tab-btn-active::after { width: 100%; }
+.tab-btn-active::after { transform: scaleX(1); }
 
 /* ── Macro/progress bars ─────────────────────────── */
 .nutr-macro-bar-fill,
 .dash-today-bar-fill {
-  animation: barGrow 0.5s var(--ease) both;
+  animation: barGrow 0.5s var(--ease-out-quint) both;
+  transform-origin: left center; /* barGrow uses scaleX — must scale from left edge */
 }
 
 /* ── Daily status bar ────────────────────────────── */
@@ -412,8 +419,8 @@
 
 /* ── Nutr macro bar fill ─────────────────────────── */
 .nutr-macro-bar-fill {
-  transition: width 0.5s var(--ease);
-  animation: barGrow 0.5s var(--ease) both;
+  transition: width 0.5s var(--ease-out-quint); /* live data updates */
+  /* barGrow (scaleX) handles mount animation — see .nutr-macro-bar-fill above */
 }
 
 /* ── Confetti celebration ───────────────────────── */
