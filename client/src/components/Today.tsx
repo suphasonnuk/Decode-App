@@ -332,10 +332,9 @@ export default function Today({ onToast }: Props) {
         </div>
         <input
           type="range" min={1} max={10} value={energy}
-          onChange={e => { if (!alreadySaved) { setEnergy(Number(e.target.value)); setSaved(false) } }}
+          onChange={e => { setEnergy(Number(e.target.value)); setSaved(false) }}
           className="energy-slider"
           style={{ '--thumb-color': energyInfo.color } as React.CSSProperties}
-          disabled={alreadySaved}
         />
         <div className="slider-scale">
           <span>Drained</span><span>Neutral</span><span>Peak energy</span>
