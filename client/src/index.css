@@ -194,7 +194,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   font-kerning: normal;
   min-height: 100vh;
-  padding-bottom: 128px; /* primary bar (72px) + secondary bar (48px) + spacing (8px) */
+  padding-bottom: calc(88px + env(safe-area-inset-bottom)); /* Bottom nav (72px) + spacing (16px) + safe area */
 }
 
 /* Tabular numbers for all data / metrics so digits align */
@@ -320,7 +320,7 @@ body::before {
 
 /* ── Tab content ── */
 .tab-content {
-  padding: var(--sp-4) var(--sp-4) 0;
+  padding: var(--sp-4) var(--sp-4) var(--sp-6);
   contain: layout style;
   min-height: 50vh;
   touch-action: pan-y pinch-zoom; /* let browser handle vertical scroll natively */
@@ -3072,7 +3072,7 @@ input:disabled, select:disabled, textarea:disabled {
   padding-bottom: env(safe-area-inset-bottom);
   max-width: 540px;
   margin: 0 auto;
-  box-shadow: 0 -1px 0 oklch(25% 0.008 45 / 0.8);
+  box-shadow: 0 -1px 0 oklch(25% 0.020 50 / 0.08);
   will-change: transform;
   transform: translateZ(0);
 }
@@ -3143,174 +3143,8 @@ input:disabled, select:disabled, textarea:disabled {
 }
 
 /* ── Secondary tab bar — featured tabs above primary bar ── */
-.secondary-tab-bar {
-  position: fixed;
-  bottom: 72px; /* sits above primary bar */
-  left: 0; right: 0;
-  background: oklch(98% 0.003 80 / 0.98);
-  border-top: 1px solid var(--border);
-  z-index: 99;
-  max-width: 540px;
-  margin: 0 auto;
-  padding-bottom: calc(env(safe-area-inset-bottom) * 0.5);
-  box-shadow: 0 -1px 0 var(--border);
-}
-
-.secondary-tab-scroll {
-  display: flex;
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  padding: 0 var(--sp-3);
-  gap: var(--sp-1);
-}
-.secondary-tab-scroll::-webkit-scrollbar { display: none; }
-
-.secondary-tab-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--muted);
-  padding: 8px 12px;
-  flex-shrink: 0;
-  transition: color var(--t-base) var(--ease),
-              background var(--t-base) var(--ease),
-              border-color var(--t-base) var(--ease);
-  border-radius: var(--radius-sm);
-  position: relative;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.secondary-tab-btn:hover {
-  background: color-mix(in oklch, var(--accent) 4%, transparent);
-  color: var(--muted2);
-}
-.secondary-tab-btn:active {
-  transform: scale(0.95);
-  transition-duration: 0.06s;
-}
-
-.secondary-tab-active {
-  color: var(--accent) !important;
-  background: color-mix(in oklch, var(--accent) 6%, transparent) !important;
-}
-
-.secondary-tab-icon {
-  font-size: 20px;
-  line-height: 1;
-  transition: transform var(--t-fast) var(--ease-out-quint);
-}
-.secondary-tab-active .secondary-tab-icon {
-  transform: scale(1.08);
-  filter: drop-shadow(0 1px 3px color-mix(in oklch, var(--accent) 25%, transparent));
-}
-
-.secondary-tab-label {
-  font-family: var(--font-body);
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-  white-space: nowrap;
-  transition: color var(--t-base) var(--ease);
-  line-height: 1;
-}
 
 /* ── More menu — premium sheet ── */
-.more-backdrop {
-  position: fixed;
-  inset: 0;
-  background: oklch(50% 0.012 70 / 0.7);
-  z-index: 99;
-  animation: fadeIn 0.12s ease both;
-}
-.more-menu {
-  position: fixed;
-  bottom: 72px;
-  bottom: calc(72px + env(safe-area-inset-bottom));
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(360px, calc(100vw - 24px));
-  max-width: 540px;
-  background: var(--gradient-surface);
-  border: 1px solid var(--border2);
-  border-radius: var(--radius-xl);
-  padding: 18px;
-  z-index: 101;
-  box-shadow: var(--shadow-lg);
-  animation: slideUp 0.18s var(--ease-out-quint) both;
-}
-@keyframes slideUp {
-  from { opacity: 0; transform: translateX(-50%) translateY(12px); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-}
-.more-menu-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--border);
-}
-.more-menu-title {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 15px;
-  color: var(--text);
-}
-.more-menu-close {
-  background: none;
-  border: none;
-  color: var(--muted2);
-  font-size: 16px;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: var(--radius-sm);
-}
-.more-menu-close:hover { color: var(--text); }
-.more-menu-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-.more-menu-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 16px 8px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  cursor: pointer;
-  color: var(--muted2);
-  transition: background var(--t-base) var(--ease), color var(--t-base) var(--ease), border-color var(--t-base) var(--ease), opacity var(--t-base) var(--ease), transform var(--t-base) var(--ease);
-  -webkit-tap-highlight-color: transparent;
-}
-.more-menu-item:hover {
-  color: var(--text);
-  border-color: var(--border2);
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
-}
-.more-menu-item:active { transform: scale(0.93); transition-duration: 0.06s; }
-.more-menu-item-active {
-  color: var(--text) !important;
-  border-color: color-mix(in oklch, var(--accent) 35%, transparent);
-  background: color-mix(in oklch, var(--accent) 8%, transparent);
-  box-shadow: 0 0 0 1px color-mix(in oklch, var(--accent) 10%, transparent), inset 0 1px 0 color-mix(in oklch, var(--accent) 5%, transparent);
-}
-.more-menu-icon { font-size: 24px; line-height: 1; }
-.more-menu-label {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-}
 
 /* ── App header no longer needs sticky positioning gap ── */
 .app-header {
@@ -4853,11 +4687,6 @@ input:disabled, select:disabled, textarea:disabled {
   box-shadow: 0 -1px 0 oklch(28% 0.010 70);
 }
 
-[data-theme="dark"] .secondary-tab-bar {
-  background: oklch(17% 0.008 70 / 0.98);
-  border-top-color: oklch(28% 0.010 70);
-  box-shadow: 0 -1px 0 var(--border);
-}
 
 [data-theme="dark"] .app-name {
   color: var(--accent);
@@ -4989,4 +4818,179 @@ input:disabled, select:disabled, textarea:disabled {
 }
 [data-theme="dark"] html {
   scrollbar-color: oklch(32% 0.010 70) transparent;
+}
+
+/* ═══════════════════════════════════════════════════
+   REVIEW TAB — Segment control
+   ═══════════════════════════════════════════════════ */
+
+.review-segment-control {
+  display: flex;
+  gap: var(--sp-2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--sp-1);
+  margin-bottom: var(--sp-4);
+}
+
+.review-segment-btn {
+  flex: 1;
+  padding: var(--sp-2) var(--sp-3);
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--muted);
+  cursor: pointer;
+  transition: background var(--t-base) var(--ease),
+              color var(--t-base) var(--ease),
+              transform var(--t-fast) var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.review-segment-btn:hover {
+  color: var(--muted2);
+  background: color-mix(in oklch, var(--accent) 4%, transparent);
+}
+
+.review-segment-btn:active {
+  transform: scale(0.97);
+  transition-duration: 0.06s;
+}
+
+.review-segment-active {
+  background: var(--accent) !important;
+  color: var(--surface) !important;
+  box-shadow: var(--shadow-xs);
+}
+
+/* ═══════════════════════════════════════════════════
+   MORE TAB — Settings & utilities
+   ═══════════════════════════════════════════════════ */
+
+.more-option-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: var(--sp-4);
+  background: none;
+  border: none;
+  border-top: 1px solid var(--border);
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--t-base) var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.more-option-btn:first-child {
+  border-top: none;
+}
+
+.more-option-btn:hover {
+  background: color-mix(in oklch, var(--accent) 3%, transparent);
+}
+
+.more-option-btn:active {
+  background: color-mix(in oklch, var(--accent) 5%, transparent);
+  transition-duration: 0.06s;
+}
+
+.more-option-icon {
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.more-option-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.more-option-label {
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.more-option-desc {
+  font-size: var(--text-xs);
+  color: var(--muted2);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+.more-option-value {
+  font-size: var(--text-sm);
+  color: var(--accent);
+  margin-top: 2px;
+}
+
+.more-option-arrow {
+  font-size: 20px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.more-footer {
+  text-align: center;
+  padding: var(--sp-10) var(--sp-4);
+  margin-top: var(--sp-10);
+}
+
+.more-footer-logo {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 24px;
+  color: var(--accent);
+  letter-spacing: 0.5px;
+  margin-bottom: var(--sp-2);
+}
+
+.more-footer-tagline {
+  font-size: var(--text-xs);
+  color: var(--muted2);
+  letter-spacing: 0.5px;
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: var(--sp-2) var(--sp-3);
+  margin-bottom: var(--sp-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--accent);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: background var(--t-base) var(--ease),
+              border-color var(--t-base) var(--ease),
+              transform var(--t-fast) var(--ease);
+}
+
+.back-btn:hover {
+  background: color-mix(in oklch, var(--accent) 4%, transparent);
+  border-color: var(--accent);
+}
+
+.back-btn:active {
+  transform: scale(0.97);
+  transition-duration: 0.06s;
+}
+
+/* Dark mode */
+[data-theme="dark"] .review-segment-control {
+  background: oklch(20% 0.007 70);
+}
+
+[data-theme="dark"] .more-option-btn {
+  border-top-color: oklch(28% 0.010 70);
 }
