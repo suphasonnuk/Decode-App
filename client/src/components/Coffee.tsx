@@ -65,7 +65,7 @@ const COFFEE_TYPES: CoffeeType[] = [
     ],
   },
   {
-    id: 'americano', name: 'Americano', icon: '🖤', color: 'oklch(76% 0.10 230)',
+    id: 'americano', name: 'Americano', icon: '🖤', color: 'oklch(76% 0.10 45)',
     tagline: 'Espresso strength, filter coffee volume.',
     base: 'espresso',
     getRecipe: (roast) => ({

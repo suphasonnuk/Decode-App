@@ -80,7 +80,7 @@ type HeatmapMetric = 'energy' | 'focus' | 'mood'
 // Module-scope constants — never change between renders
 const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 const HEATMAP_COLORS: Record<HeatmapMetric, string> = {
-  energy: '72% 0.16 250',
+  energy: '72% 0.14 230',
   focus:  '78% 0.16 80',
   mood:   '74% 0.16 160',
 }
