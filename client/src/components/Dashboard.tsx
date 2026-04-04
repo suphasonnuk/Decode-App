@@ -359,7 +359,7 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
   const dates         = useMemo(() => weekDates(), [])
   const todayLocalStr = todayStr()
 
-  const { stats, unlockedAch, lockedAch } = useMemo(() => {
+  const { unlockedAch, lockedAch } = useMemo(() => {
     const stats: UserStats = {
       currentStreak: streak?.current ?? 0,
       winRatePct:    winRateWeek ?? 0,
@@ -369,7 +369,7 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
     }
     const unlockedAch = getUnlockedAchievements(stats)
     const lockedAch   = ALL_ACHIEVEMENTS.filter(a => !unlockedAch.find(u => u.id === a.id)).slice(0, 4)
-    return { stats, unlockedAch, lockedAch }
+    return { unlockedAch, lockedAch }
   }, [streak, winRateWeek, avgEnergy, wins])
 
   const greeting = getGreeting(hour)
