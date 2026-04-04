@@ -275,6 +275,7 @@ export default function Today({ onToast }: Props) {
             <div
               key={cat.key}
               className={`task-card ${hasError ? 'task-card-error' : ''} ${value ? 'task-card-filled' : ''}`}
+              data-pillar={cat.key}
             >
               <div className="task-card-header">
                 <div className="task-card-left">
