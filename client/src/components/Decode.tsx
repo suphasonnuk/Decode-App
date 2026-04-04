@@ -3,7 +3,6 @@ import { api } from '../api'
 import type { DecodedInsights, DecodedPortrait } from '../api'
 import { getEmotionById } from '../data/emotions'
 import { getUserId } from '../store'
-import { alpha } from '../lib/color'
 
 export default function Decode() {
   const [data, setData] = useState<DecodedInsights | null>(null)
@@ -12,7 +11,7 @@ export default function Decode() {
   const [portraitLoading, setPortraitLoading] = useState(false)
   const [error, setError] = useState('')
   const [portraitError, setPortraitError] = useState('')
-  const [portraitCached, setPortraitCached] = useState(false)
+  const [, setPortraitCached] = useState(false)
 
   const userId = getUserId()
 

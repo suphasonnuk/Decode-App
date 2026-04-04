@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { api, type NutritionEntry, type NutritionFacts, type NutritionTotals, type HealthImpact } from '../api'
 import { getUserId, getProfileCache, calculateNutritionTargets } from '../store'
 import { alpha } from '../lib/color'
@@ -7,6 +7,21 @@ import { alpha } from '../lib/color'
 // Falls back to 2000kcal defaults if profile is incomplete.
 const MEAL_TYPES = ['Breakfast', 'Lunch', 'Dinner', 'Snack']
 type Mode = 'log' | 'photo' | 'manual'
+
+// Module-scope constants — defined once, not recreated on every render
+const MEAL_ICON: Record<string, string> = {
+  breakfast: '🌅', lunch: '☀️', dinner: '🌙', snack: '🍎',
+}
+
+const NUTRITION_FIELDS = [
+  { key: 'calories',  label: 'Calories', unit: 'kcal', color: 'var(--accent)',       max: 5000  },
+  { key: 'protein_g', label: 'Protein',  unit: 'g',    color: 'var(--work)',          max: 500   },
+  { key: 'carbs_g',   label: 'Carbs',    unit: 'g',    color: 'var(--future)',        max: 1000  },
+  { key: 'fat_g',     label: 'Fat',      unit: 'g',    color: 'var(--partial)',       max: 500   },
+  { key: 'fiber_g',   label: 'Fiber',    unit: 'g',    color: 'var(--body)',          max: 200   },
+  { key: 'sugar_g',   label: 'Sugar',    unit: 'g',    color: 'oklch(72% 0.14 350)', max: 500   },
+  { key: 'sodium_mg', label: 'Sodium',   unit: 'mg',   color: 'var(--muted2)',        max: 10000 },
+]
 
 // ── MacroBar ──────────────────────────────────────────────────────────────────
 function MacroBar({ label, value, target, color, unit = 'g' }: {
@@ -35,11 +50,10 @@ function MacroBar({ label, value, target, color, unit = 'g' }: {
 }
 
 // ── MealCard ──────────────────────────────────────────────────────────────────
-function MealCard({ entry, onEdit, onDelete }: { entry: NutritionEntry; onEdit?: (e: NutritionEntry) => void; onDelete?: (id: string) => void }) {
-  const mealIcon: Record<string, string> = {
-    breakfast: '🌅', lunch: '☀️', dinner: '🌙', snack: '🍎',
-  }
-  const icon = mealIcon[(entry.meal_type || '').toLowerCase()] ?? '🍽️'
+function MealCard({ entry, onEdit, onDelete, isDeleting }: {
+  entry: NutritionEntry; onEdit?: (e: NutritionEntry) => void; onDelete?: (id: string) => void; isDeleting?: boolean
+}) {
+  const icon = MEAL_ICON[(entry.meal_type || '').toLowerCase()] ?? '🍽️'
   return (
     <div className="nutr-meal-card">
       <div className="nutr-meal-header">
@@ -60,7 +74,9 @@ function MealCard({ entry, onEdit, onDelete }: { entry: NutritionEntry; onEdit?:
           <button className="nutr-meal-edit-btn" onClick={() => onEdit(entry)} title="Edit this meal">✏️</button>
         )}
         {onDelete && entry.entry_id && (
-          <button className="nutr-meal-delete-btn" onClick={() => onDelete(entry.entry_id!)} title="Remove this meal">🗑️</button>
+          <button className="nutr-meal-delete-btn" onClick={() => onDelete(entry.entry_id!)} title="Remove this meal" disabled={isDeleting}>
+            {isDeleting ? '⏳' : '🗑️'}
+          </button>
         )}
       </div>
       {(entry.protein_g != null || entry.carbs_g != null || entry.fat_g != null) && (
@@ -185,16 +201,6 @@ function NutritionForm({ initial, source, onSave, onCancel, saving }: NutritionF
     })
   }
 
-  const FIELDS = [
-    { key: 'calories',  label: 'Calories', unit: 'kcal', color: 'var(--accent)'  },
-    { key: 'protein_g', label: 'Protein',  unit: 'g',    color: 'var(--work)'    },
-    { key: 'carbs_g',   label: 'Carbs',    unit: 'g',    color: 'var(--future)'  },
-    { key: 'fat_g',     label: 'Fat',      unit: 'g',    color: 'var(--partial)' },
-    { key: 'fiber_g',   label: 'Fiber',    unit: 'g',    color: 'var(--body)'    },
-    { key: 'sugar_g',   label: 'Sugar',    unit: 'g',    color: 'oklch(72% 0.14 350)' },
-    { key: 'sodium_mg', label: 'Sodium',   unit: 'mg',   color: 'var(--muted2)'  },
-  ]
-
   return (
     <div className="nutr-form">
       <div className="nutr-form-field">
@@ -204,6 +210,7 @@ function NutritionForm({ initial, source, onSave, onCancel, saving }: NutritionF
           value={form.dish_name}
           onChange={set('dish_name')}
           placeholder="e.g. Pad Thai, Grilled Salmon..."
+          maxLength={200}
           autoFocus
         />
       </div>
@@ -215,12 +222,12 @@ function NutritionForm({ initial, source, onSave, onCancel, saving }: NutritionF
         </select>
       </div>
       <div className="nutr-form-grid">
-        {FIELDS.map(f => (
+        {NUTRITION_FIELDS.map(f => (
           <div key={f.key} className="nutr-macro-input">
             <label style={{ color: f.color }}>{f.label}</label>
             <div className="nutr-macro-input-wrap">
               <input
-                type="number" min="0" step="1"
+                type="number" min="0" step="1" max={f.max}
                 className="prof-input nutr-num-input"
                 value={(form as any)[f.key]}
                 onChange={set(f.key)}
@@ -237,6 +244,7 @@ function NutritionForm({ initial, source, onSave, onCancel, saving }: NutritionF
           className="field-textarea" rows={2}
           value={form.notes} onChange={set('notes')}
           placeholder="e.g. large portion, no rice..."
+          maxLength={500}
         />
       </div>
       <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
@@ -278,7 +286,8 @@ export default function Nutrition({ onToast, onTabChange }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const userId  = getUserId()
-  const TARGETS         = calculateNutritionTargets(getProfileCache())
+  // Memoized: profile doesn't change during a Nutrition session (requires navigating to Profile to update)
+  const TARGETS         = useMemo(() => calculateNutritionTargets(getProfileCache()), [])
   const profileComplete = TARGETS.bmr > 0   // false = missing height/weight/birth_year
   const [nudgeDismissed, setNudgeDismissed] = useState(() => {
     // Only dismiss for this session — show again next day
@@ -289,7 +298,7 @@ export default function Nutrition({ onToast, onTabChange }: Props) {
     setNudgeDismissed(true)
   }
 
-  const fetchToday = () => {
+  const fetchToday = useCallback(() => {
     setFetchError('')
     api.getNutritionToday(userId)
       .then(data => {
@@ -303,7 +312,7 @@ export default function Nutrition({ onToast, onTabChange }: Props) {
         console.error('[nutrition] fetchToday error:', msg)
       })
       .finally(() => setLoading(false))
-  }
+  }, [userId])
 
   useEffect(() => { fetchToday() }, [])
 
@@ -445,6 +454,7 @@ export default function Nutrition({ onToast, onTabChange }: Props) {
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const handleDelete = async (entryId: string) => {
+    if (deletingId) return  // prevent double-delete while one is in flight
     if (!window.confirm('Remove this meal from today\'s log?')) return
     setDeletingId(entryId)
     try {
@@ -497,20 +507,23 @@ export default function Nutrition({ onToast, onTabChange }: Props) {
   const handleCancel = () => {
     setMode('log')
     setAnalyzeResult(null)
+    setAnalyzeRaw('')
     setImagePreview(null)
     setDishInput('')
     setError('')
     setEditingEntry(null)
   }
 
-  const calPct   = totals ? Math.min(Math.round((totals.calories / TARGETS.calories) * 100), 100) : 0
-  const calColor = !totals
-    ? 'var(--muted2)'
-    : totals.calories > TARGETS.calories
-      ? 'var(--miss)'
-      : totals.calories > TARGETS.calories * 0.8
-        ? 'var(--win)'
-        : 'var(--work)'
+  const { calPct, calColor } = useMemo(() => ({
+    calPct: totals ? Math.min(Math.round((totals.calories / TARGETS.calories) * 100), 100) : 0,
+    calColor: !totals
+      ? 'var(--muted2)'
+      : totals.calories > TARGETS.calories
+        ? 'var(--miss)'
+        : totals.calories > TARGETS.calories * 0.8
+          ? 'var(--win)'
+          : 'var(--work)',
+  }), [totals, TARGETS])
 
   return (
     <div>
@@ -626,7 +639,7 @@ export default function Nutrition({ onToast, onTabChange }: Props) {
           {entries.length > 0 && (
             <div className="card">
               <div className="card-label">Today's meals</div>
-              {entries.map((e, i) => <MealCard key={e.entry_id ?? i} entry={e} onEdit={handleEditStart} onDelete={handleDelete} />)}
+              {entries.map((e, i) => <MealCard key={e.entry_id ?? i} entry={e} onEdit={handleEditStart} onDelete={handleDelete} isDeleting={deletingId === e.entry_id} />)}
             </div>
           )}
 

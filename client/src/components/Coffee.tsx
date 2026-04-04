@@ -65,7 +65,7 @@ const COFFEE_TYPES: CoffeeType[] = [
     ],
   },
   {
-    id: 'americano', name: 'Americano', icon: '🖤', color: 'oklch(76% 0.10 230)',
+    id: 'americano', name: 'Americano', icon: '🖤', color: 'oklch(76% 0.10 45)',
     tagline: 'Espresso strength, filter coffee volume.',
     base: 'espresso',
     getRecipe: (roast) => ({
@@ -77,7 +77,7 @@ const COFFEE_TYPES: CoffeeType[] = [
       time_s: ROAST_TIME[roast],
       notes: 'Add water to cup first, then espresso — preserves crema on top',
     }),
-    getMethod: (roast, r) => [
+    getMethod: (_roast, r) => [
       `Pull espresso: ${r.dose_g}g in → ${r.yield_g}g out in ${r.time_s} at ${r.temp_c}°C`,
       `Pour 120ml hot water (off-boil, ~96°C) into your cup first`,
       `Pour espresso over the water — crema floats on top`,
@@ -98,7 +98,7 @@ const COFFEE_TYPES: CoffeeType[] = [
       time_s: ROAST_TIME[roast],
       notes: 'Milk at 65°C — any hotter kills sweetness. Full-fat gives best microfoam texture.',
     }),
-    getMethod: (roast, r) => [
+    getMethod: (_roast, r) => [
       `Pull espresso: ${r.dose_g}g in → ${r.yield_g}g out in ${r.time_s} at ${r.temp_c}°C`,
       'Steam 200ml whole milk to 65°C — submerge tip just below surface, swirl',
       'Aim for glossy, paint-like microfoam — no large bubbles',
@@ -120,7 +120,7 @@ const COFFEE_TYPES: CoffeeType[] = [
       time_s: ROAST_TIME[roast],
       notes: 'Ristretto stops early — sweeter, more concentrated, less bitter than full espresso',
     }),
-    getMethod: (roast, r) => [
+    getMethod: (_roast, r) => [
       `Pull ristretto: ${r.dose_g}g in → ${r.yield_g}g out (stop early) in ${r.time_s}`,
       `Temperature: ${r.temp_c}°C — slightly higher to compensate for shorter extraction`,
       'Steam 120ml whole milk to 60–65°C — tighter, velvety microfoam',
@@ -141,7 +141,7 @@ const COFFEE_TYPES: CoffeeType[] = [
       time_s: ROAST_TIME[roast],
       notes: 'Classic Italian: 60ml espresso + 60ml steamed milk + 60ml foam in a 180ml cup',
     }),
-    getMethod: (roast, r) => [
+    getMethod: (_roast, r) => [
       `Pull espresso: ${r.dose_g}g in → ${r.yield_g}g out (~60ml) in ${r.time_s} at ${r.temp_c}°C`,
       'Steam 150ml whole milk — more air than latte, aim for thick glossy foam',
       'Temperature 60–65°C — stop steaming earlier to keep more foam',
@@ -168,6 +168,11 @@ interface CoffeeLog {
   yield_g:     number | null
 }
 
+const COFFEE_ICON: Record<string, string> = {
+  espresso: '☕', americano: '🖤', latte: '🥛', flat_white: '🤍', cappuccino: '💫',
+}
+const ROAST_LABEL: Record<string, string> = { light: 'Light', medium: 'Medium', dark: 'Dark' }
+
 interface Props { onToast: (msg: string, err?: boolean) => void }
 
 export default function Coffee({ onToast }: Props) {
@@ -184,7 +189,7 @@ export default function Coffee({ onToast }: Props) {
       .then(data => setTodayLogs(data || []))
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [])
+  }, [userId])
 
   const selectedType = COFFEE_TYPES.find(t => t.id === selected)
   const recipe = selectedType ? selectedType.getRecipe(roast) : null
@@ -213,11 +218,6 @@ export default function Coffee({ onToast }: Props) {
       setSaving(false)
     }
   }
-
-  const coffeeIcon: Record<string, string> = {
-    espresso: '☕', americano: '🖤', latte: '🥛', flat_white: '🤍', cappuccino: '💫',
-  }
-  const roastLabel: Record<string, string> = { light: 'Light', medium: 'Medium', dark: 'Dark' }
 
   return (
     <div>
@@ -277,7 +277,7 @@ export default function Coffee({ onToast }: Props) {
                   {selectedType.name}
                 </div>
                 <div className="coffee-recipe-roast">
-                  {roastLabel[roast]} roast · {recipe.temp_c}°C
+                  {ROAST_LABEL[roast]} roast · {recipe.temp_c}°C
                 </div>
               </div>
             </div>
@@ -352,14 +352,14 @@ export default function Coffee({ onToast }: Props) {
           {todayLogs.map((log, i) => (
             <div key={log.entry_id ?? i} className="coffee-log-row">
               <span className="coffee-log-icon">
-                {coffeeIcon[log.coffee_type] ?? '☕'}
+                {COFFEE_ICON[log.coffee_type] ?? '☕'}
               </span>
               <div className="coffee-log-body">
                 <div className="coffee-log-name coffee-log-name-cap">
                   {log.coffee_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </div>
                 <div className="coffee-log-meta">
-                  {roastLabel[log.roast] ?? log.roast} roast
+                  {ROAST_LABEL[log.roast] ?? log.roast} roast
                   {log.dose_g ? ` · ${log.dose_g}g` : ''}
                   {log.yield_g ? ` → ${log.yield_g}g` : ''}
                 </div>

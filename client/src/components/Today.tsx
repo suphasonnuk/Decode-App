@@ -1,5 +1,4 @@
-import React, { useCallback } from 'react'
-import { useState, useEffect, useRef } from 'react'
+import React, { useCallback, useState, useEffect, useRef, useMemo } from 'react'
 import type { LogPayload } from '../types'
 import { TASK_CATEGORIES, TASK_OPTIONS, ENERGY_LABELS, todayMotivation } from '../data'
 import { todayStr, weekStartStr, getAnchors, getTodayCache, saveTodayCache, parseBQDate, bumpTaskFreq, sortedTaskOptions } from '../store'
@@ -123,9 +122,10 @@ export default function Today({ onToast }: Props) {
   const [alreadySaved, setAlreadySaved] = useState(false)  // true = BQ has today's morning log
   const [yesterdayPlan, setYesterdayPlan] = useState<string | null>(null)
 
-  const today      = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+  // Stable within a session — component remounts at midnight
+  const today      = useMemo(() => new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }), [])
+  const motivation = useMemo(() => todayMotivation(), [])
   const energyInfo = ENERGY_LABELS[energy]
-  const motivation = todayMotivation()
 
   useEffect(() => {
     api.getYesterday().then(r => setYesterdayPlan(r.tomorrow_action)).catch(() => {})
@@ -166,9 +166,9 @@ export default function Today({ onToast }: Props) {
 
   const validate = (): boolean => {
     const e = {
-      work:   !taskValues.work,
-      future: !taskValues.future,
-      body:   !taskValues.body,
+      work:   !taskValues.work.trim(),
+      future: !taskValues.future.trim(),
+      body:   !taskValues.body.trim(),
     }
     setErrors(e)
     return !e.work && !e.future && !e.body
@@ -182,9 +182,9 @@ export default function Today({ onToast }: Props) {
       work_anchor:   anch.work   || null,
       future_anchor: anch.future || null,
       body_anchor:   anch.body   || null,
-      work_task:     taskValues.work,
-      future_task:   taskValues.future,
-      body_task:     taskValues.body,
+      work_task:     taskValues.work.trim(),
+      future_task:   taskValues.future.trim(),
+      body_task:     taskValues.body.trim(),
       work_done:     done.work,
       future_done:   done.future,
       body_done:     done.body,
@@ -200,6 +200,12 @@ export default function Today({ onToast }: Props) {
       onToast('Error: ' + (err instanceof Error ? err.message : 'Unknown'), true)
     } finally { setLoading(false) }
   }
+
+  const sortedOptions = useMemo(() => ({
+    work:   sortedTaskOptions('work',   TASK_OPTIONS['work']),
+    future: sortedTaskOptions('future', TASK_OPTIONS['future']),
+    body:   sortedTaskOptions('body',   TASK_OPTIONS['body']),
+  }), [taskValues])  // recompute after bumpTaskFreq (always called alongside setTaskValue)
 
   const selectedCount  = Object.values(taskValues).filter(Boolean).length
   const completedCount = Object.values(done).filter(Boolean).length
@@ -252,6 +258,7 @@ export default function Today({ onToast }: Props) {
             try { localStorage.setItem('decode_intention_' + todayStr(), e.target.value) } catch {}
           }}
           placeholder="e.g. Stay focused on the quarterly report and finish by 3pm"
+          maxLength={500}
           disabled={alreadySaved}
         />
       </div>
@@ -262,7 +269,7 @@ export default function Today({ onToast }: Props) {
           const value = taskValues[cat.key]
           const isDone = done[cat.key]
           const hasError = errors[cat.key]
-          const options = sortedTaskOptions(cat.key, TASK_OPTIONS[cat.key])
+          const options = sortedOptions[cat.key as TaskKey]
 
           return (
             <div
@@ -309,7 +316,8 @@ export default function Today({ onToast }: Props) {
                   onChange={e => { if (!alreadySaved) { setTaskValue(cat.key, e.target.value); setSaved(false) } }}
                   disabled={alreadySaved}
                   placeholder={`Type your custom ${cat.label.toLowerCase()}...`}
-                  autoFocus
+                  maxLength={200}
+                  autoFocus={customMode[cat.key] && !alreadySaved}
                 />
               )}
               {hasError && <div className="field-error">Please select a {cat.label.toLowerCase()}</div>}
@@ -332,10 +340,9 @@ export default function Today({ onToast }: Props) {
         </div>
         <input
           type="range" min={1} max={10} value={energy}
-          onChange={e => { if (!alreadySaved) { setEnergy(Number(e.target.value)); setSaved(false) } }}
+          onChange={e => { setEnergy(Number(e.target.value)); setSaved(false) }}
           className="energy-slider"
           style={{ '--thumb-color': energyInfo.color } as React.CSSProperties}
-          disabled={alreadySaved}
         />
         <div className="slider-scale">
           <span>Drained</span><span>Neutral</span><span>Peak energy</span>

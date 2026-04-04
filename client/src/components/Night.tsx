@@ -143,8 +143,14 @@ export default function Night({ onToast }: Props) {
           <span className="day-locked-icon">🌙</span>
           <div className="day-locked-body">
             <div className="day-locked-title">Day already closed</div>
-            <div className="day-locked-sub">Tonight's log is saved in BigQuery. Resets at midnight for tomorrow.</div>
+            <div className="day-locked-sub">Saved to BigQuery. Resets at midnight.</div>
           </div>
+          <button
+            className="day-locked-edit-btn"
+            onClick={() => { setAlreadySaved(false); setSaved(false) }}
+          >
+            Edit
+          </button>
         </div>
       )}
 
@@ -337,12 +343,12 @@ export default function Night({ onToast }: Props) {
       </div>
 
       <button
-        className="btn-success btn-full"
+        className={`${saved ? 'btn-success' : 'btn-primary'} btn-full`}
         onClick={handleSave}
         disabled={loading || !todayFilled || alreadySaved}
       >
         {loading && <span className="spinner show" />}
-        {alreadySaved ? '✓ Day Closed & Saved' : saved ? '✓ Day Closed & Saved' : 'Close the Day'}
+        {alreadySaved ? '✓ Day Closed & Saved' : saved ? '✓ Updated & Saved' : 'Close the Day'}
       </button>
     </div>
   )

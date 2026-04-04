@@ -1,5 +1,4 @@
 import type { Tab } from '../types'
-import type { TimePeriod } from '../data/calendar'
 import { getTimePeriod, TIME_PERIOD_LABELS } from '../data/calendar'
 import { getTodayCache, getNightCache, getAnchors } from '../store'
 
@@ -101,7 +100,7 @@ function buildChecklist(s: ReturnType<typeof getDailyStatus>) {
   let taskWhen = 'Every morning · 3 min'
   let taskTitle = s.tasksSelected ? `Today's tasks logged` : `Pick today's 3 tasks`
   let taskDetail = ''
-  let taskMuted = false
+  // taskMuted removed — unused
 
   if (!s.tasksSelected) {
     if (s.period === 'early_morning') {
@@ -261,11 +260,11 @@ function getHeaderMessage(s: ReturnType<typeof getDailyStatus>, pct: number) {
 
 // ── Urgency styles ────────────────────────────────────────────────────────────
 const URGENCY_BADGE_STYLE: Record<string, { bg: string; color: string }> = {
-  chill:   { bg: 'oklch(72% 0.12 220 / 0.12)',  color: 'var(--work)'    },
-  normal:  { bg: 'oklch(74% 0.18 280 / 0.15)',   color: 'var(--accent)'  },
+  chill:   { bg: 'oklch(60% 0.10 230 / 0.12)',  color: 'var(--work)'    },
+  normal:  { bg: 'oklch(58% 0.12 185 / 0.15)',   color: 'var(--accent)'  },
   urgent:  { bg: 'oklch(78% 0.16 80 / 0.2)',    color: 'var(--partial)' },
-  overdue: { bg: 'oklch(64% 0.22 25 / 0.18)',   color: 'var(--miss)'    },
-  none:    { bg: 'oklch(94% 0.006 260 / 0.06)', color: 'var(--muted2)'  },
+  overdue: { bg: 'oklch(62% 0.18 25 / 0.18)',   color: 'var(--miss)'    },
+  none:    { bg: 'oklch(93% 0.008 60 / 0.06)', color: 'var(--muted2)'  },
   Tonight: { bg: 'oklch(76% 0.12 150 / 0.1)',   color: 'var(--body)'    },
 }
 

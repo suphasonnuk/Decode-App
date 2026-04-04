@@ -142,7 +142,7 @@ function useOfflineStatus() {
 }
 
 function getStoredTheme(): 'dark' | 'light' {
-  try { return (localStorage.getItem('decode_theme') as 'dark' | 'light') || 'dark' } catch { return 'dark' }
+  try { return (localStorage.getItem('decode_theme') as 'dark' | 'light') || 'light' } catch { return 'light' }
 }
 
 function AppInner() {
@@ -364,8 +364,12 @@ function AppInner() {
               {theme === 'dark' ? '☀️' : '🌙'}
             </button>
             <button className="checklist-reopen-btn" onClick={() => setShowChecklist(true)} aria-label="Open today's checklist">📋</button>
-            <div className={`server-status ${serverOk === true ? 'server-ok' : serverOk === false ? 'server-err' : ''}`}>
-              <div className="server-dot" />
+            <div
+              className={`server-status ${serverOk === true ? 'server-ok' : serverOk === false ? 'server-err' : ''}`}
+              role="status"
+              aria-label={serverOk === true ? 'Server connected' : serverOk === false ? 'Server error' : 'Checking server'}
+            >
+              <div className="server-dot" aria-hidden="true" />
             </div>
           </div>
         </header>

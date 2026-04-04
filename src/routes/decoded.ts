@@ -39,7 +39,6 @@ router.get('/decoded', async (req: Request, res: Response) => {
 
     const completedRows = rows.filter(r => r.day_outcome)
     const wins = completedRows.filter(r => r.day_outcome === 'win')
-    const misses = completedRows.filter(r => r.day_outcome === 'miss')
 
     const avg = (arr: any[], key: string): number => {
       const vals = arr.map(r => r[key]).filter((v: any) => typeof v === 'number' && v > 0)
@@ -49,7 +48,7 @@ router.get('/decoded', async (req: Request, res: Response) => {
     // 1. Task completion vs mood/energy correlations
     const taskCorrelations: { label: string; insight: string; strength: number }[] = []
 
-    for (const [taskKey, doneKey, pillar] of [
+    for (const [_taskKey, doneKey, pillar] of [
       ['work_task', 'work_done', 'Work'],
       ['future_task', 'future_done', 'Future'],
       ['body_task', 'body_done', 'Body'],
@@ -98,7 +97,7 @@ router.get('/decoded', async (req: Request, res: Response) => {
       if (dayRows.length >= 2) {
         const dayWins = dayRows.filter(r => r.day_outcome === 'win').length
         dayOfWeekStats.push({
-          day: DAYS[d],
+          day: DAYS[d]!,
           winRate: Math.round((dayWins / dayRows.length) * 100),
           avgMood: avg(dayRows, 'mood_level'),
           avgEnergy: avg(dayRows, 'energy_level'),
@@ -107,8 +106,12 @@ router.get('/decoded', async (req: Request, res: Response) => {
       }
     }
 
-    const bestDay = dayOfWeekStats.reduce((best, d) => d.winRate > best.winRate ? d : best, dayOfWeekStats[0])
-    const worstDay = dayOfWeekStats.reduce((worst, d) => d.winRate < worst.winRate ? d : worst, dayOfWeekStats[0])
+    const bestDay = dayOfWeekStats.length > 0
+      ? dayOfWeekStats.reduce((best, d) => d.winRate > best.winRate ? d : best)
+      : undefined
+    const worstDay = dayOfWeekStats.length > 0
+      ? dayOfWeekStats.reduce((worst, d) => d.winRate < worst.winRate ? d : worst)
+      : undefined
 
     // 3. Emotion patterns
     const emotionCounts: Record<string, number> = {}

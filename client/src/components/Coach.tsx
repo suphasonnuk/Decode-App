@@ -1,6 +1,13 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { api } from '../api'
 import { getUserId } from '../store'
+
+const LOADING_STEPS = [
+  { label: 'Fetching your last 30 days…',          sub: 'Reading from BigQuery' },
+  { label: 'Analyzing energy & outcome patterns…', sub: 'Looking for what drives your wins' },
+  { label: 'Identifying your strongest habits…',   sub: 'Cross-referencing focus, mood & tasks' },
+  { label: 'Writing your personalized report…',    sub: 'Claude is composing your insights' },
+]
 
 interface CoachData {
   greeting:    string
@@ -55,9 +62,11 @@ function ScoreMeter({ score }: { score: number }) {
 }
 
 export default function Coach() {
-  const [data,    setData]    = useState<CoachData | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error,   setError]   = useState('')
+  const [data,        setData]        = useState<CoachData | null>(null)
+  const [loading,     setLoading]     = useState(false)
+  const [loadingStep, setLoadingStep] = useState(0)
+  const [error,       setError]       = useState('')
+  const stepTimer = useRef<ReturnType<typeof setInterval> | null>(null)
   const [cached,  setCached]  = useState<{ data: CoachData; ts: number } | null>(() => {
     try {
       const raw = localStorage.getItem('decode_coach_cache')
@@ -78,7 +87,14 @@ export default function Coach() {
   const fetchCoaching = async (force = false) => {
     if (!force && cached) return   // Use cache
     setLoading(true)
+    setLoadingStep(0)
     setError('')
+
+    // Advance through loading steps every 7s to show progress
+    stepTimer.current = setInterval(() => {
+      setLoadingStep(s => Math.min(s + 1, LOADING_STEPS.length - 1))
+    }, 7000)
+
     try {
       const res = await api.getCoaching(userId)
       setData(res)
@@ -88,9 +104,14 @@ export default function Coach() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Coach unavailable')
     } finally {
+      if (stepTimer.current) clearInterval(stepTimer.current)
       setLoading(false)
+      setLoadingStep(0)
     }
   }
+
+  // Clean up timer on unmount
+  useEffect(() => () => { if (stepTimer.current) clearInterval(stepTimer.current) }, [])
 
   return (
     <div>
@@ -122,8 +143,22 @@ export default function Coach() {
           <div className="coach-loading-dots">
             <div /><div /><div />
           </div>
-          <div className="coach-loading-label">Claude is reading your data...</div>
-          <div className="coach-loading-sub">Analyzing patterns in your last 30 days</div>
+          <div className="coach-loading-steps">
+            {LOADING_STEPS.map((step, i) => (
+              <div
+                key={i}
+                className={`coach-loading-step ${i === loadingStep ? 'active' : ''} ${i < loadingStep ? 'done' : ''}`}
+              >
+                <span className="coach-loading-step-dot" />
+                <div>
+                  <div className="coach-loading-step-label">{step.label}</div>
+                  {i === loadingStep && (
+                    <div className="coach-loading-step-sub">{step.sub}</div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

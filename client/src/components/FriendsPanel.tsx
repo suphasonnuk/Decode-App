@@ -22,7 +22,7 @@ const STATUS_CONFIG = {
   online:  { color: 'var(--win)',    label: 'Online now',      dot: 'oklch(62% 0.18 150)' },
   recent:  { color: 'var(--partial)', label: 'Active recently', dot: 'oklch(72% 0.16 60)' },
   away:    { color: 'var(--muted)',  label: 'Away',             dot: 'var(--muted)' },
-  offline: { color: 'var(--muted)',  label: 'Offline',          dot: 'oklch(30% 0.005 260)' },
+  offline: { color: 'var(--muted)',  label: 'Offline',          dot: 'oklch(30% 0.005 45)' },
 }
 
 const OUTCOME_CONFIG: Record<string, { emoji: string; color: string; label: string }> = {
