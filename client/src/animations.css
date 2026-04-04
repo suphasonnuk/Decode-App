@@ -87,7 +87,7 @@
   animation: fadeIn 0.35s var(--ease) both;
   background:
     radial-gradient(ellipse at 50% 40%, oklch(16% 0.016 185 / 0.4) 0%, transparent 50%),
-    radial-gradient(ellipse at 30% 70%, oklch(14% 0.010 45 / 0.25) 0%, transparent 50%),
+    radial-gradient(ellipse at 30% 70%, oklch(96% 0.008 185 / 0.25) 0%, transparent 50%),
     var(--bg);
 }
 .splash-logo {
@@ -242,7 +242,7 @@
   padding: var(--sp-6);
   background:
     radial-gradient(ellipse at 30% 20%, oklch(16% 0.016 185 / 0.4) 0%, transparent 50%),
-    radial-gradient(ellipse at 70% 80%, oklch(14% 0.010 45 / 0.3) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 80%, oklch(96% 0.008 185 / 0.3) 0%, transparent 50%),
     var(--bg);
 }
 .onboard-card {
@@ -330,7 +330,7 @@
 }
 .toast-ok {
   background: oklch(74% 0.16 160 / 0.95);
-  color: oklch(11% 0.010 45);
+  color: oklch(22% 0.020 240);
   box-shadow: 0 4px 12px oklch(74% 0.16 160 / 0.25), 0 12px 32px oklch(74% 0.16 160 / 0.15), inset 0 1px 0 oklch(100% 0 0 / 0.15);
 }
 .toast-err {
@@ -372,7 +372,7 @@
 .spinner {
   width: 13px; height: 13px;
   border: 2px solid oklch(11% 0.010 45 / 0.25);
-  border-top-color: oklch(11% 0.010 45);
+  border-top-color: oklch(22% 0.020 240);
   border-radius: 50%;
   animation: spin 0.55s linear infinite;
   display: none;
