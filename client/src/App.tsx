@@ -16,6 +16,8 @@ import { shouldShowChallengePopup } from './lib/challenge'
 // Lazy — loaded on demand when tab is activated
 const Dashboard        = lazy(() => import('./components/Dashboard'))
 const Today            = lazy(() => import('./components/Today'))
+const Review           = lazy(() => import('./components/Review'))
+const More             = lazy(() => import('./components/More'))
 const Night            = lazy(() => import('./components/Night'))
 const Week             = lazy(() => import('./components/Week'))
 const Trends           = lazy(() => import('./components/Trends'))
@@ -34,27 +36,12 @@ const QuickLog         = lazy(() => import('./components/QuickLog'))
 
 type AppTab = Tab
 
-// Primary row — daily use tabs
+// Bottom navigation — 4 tabs only (iOS HIG + Material Design standard)
 const TABS_PRIMARY = [
   { id: 'dashboard' as AppTab, icon: '🏠', label: 'Home'    },
   { id: 'daily'     as AppTab, icon: '☀️', label: 'Today'   },
-  { id: 'night'     as AppTab, icon: '🌙', label: 'Night'   },
-  { id: 'decode'    as AppTab, icon: '🔬', label: 'Decode'  },
-]
-
-// Featured secondary tabs — always visible above primary bar
-const TABS_FEATURED = [
-  { id: 'trends'    as AppTab, icon: '📊', label: 'Trends'   },
-  { id: 'coach'     as AppTab, icon: '🤖', label: 'Coach'    },
-  { id: 'nutrition' as AppTab, icon: '🥗', label: 'Food'     },
-  { id: 'coffee'    as AppTab, icon: '☕', label: 'Coffee'   },
-]
-
-// Remaining secondary tabs — accessible via "More" menu
-const TABS_MORE = [
-  { id: 'week'      as AppTab, icon: '📅', label: 'Week'     },
-  { id: 'anchors'   as AppTab, icon: '🧭', label: 'Anchors'  },
-  { id: 'help'      as AppTab, icon: '❓', label: 'Help'     },
+  { id: 'review'    as AppTab, icon: '🌙', label: 'Review'  },
+  { id: 'more'      as AppTab, icon: '⚙️', label: 'More'    },
 ]
 
 
@@ -159,7 +146,6 @@ function AppInner() {
   const [pendingAch,    setPendingAch]   = useState<Achievement | null>(null)
   const [showChallenge, setShowChallenge] = useState(false)
   const [showFriends,  setShowFriends]  = useState(false)
-  const [showMore,     setShowMore]    = useState(false)
   const [tab,           setTab]          = useState<AppTab>('dashboard')
   const [serverOk,      setServerOk]     = useState<boolean | null>(null)
   const [toast,         setToast]        = useState<ToastState>({ msg: '', isErr: false, visible: false })
@@ -394,16 +380,21 @@ function AppInner() {
         >
           <Suspense fallback={LazyFallback}>
             {tab === 'dashboard' && <Dashboard key={`${dashKey}-${dayKey}`} onTabChange={t => handleTabChange(t as AppTab)} onNewAchievement={a => setPendingAch(a)} />}
-            {tab === 'daily'     && <Today   onToast={showToast} />}
-            {tab === 'night'     && <Night   onToast={showToast} />}
-            {tab === 'week'      && <Week    key={weekKey} />}
-            {tab === 'coach'     && <Coach />}
-            {tab === 'anchors'   && <Anchors onSaved={() => showToast('Anchors saved ✓')} />}
+            {tab === 'daily'     && <Today onToast={showToast} />}
+            {tab === 'review'    && <Review onToast={showToast} weekKey={weekKey} />}
+            {tab === 'more'      && <More
+              theme={theme}
+              onThemeToggle={toggleTheme}
+              onTabChange={t => handleTabChange(t as AppTab)}
+              onProfileView={() => handleTabChange('dashboard')}
+              onExportView={() => handleTabChange('dashboard')}
+            />}
+            {/* Secondary views — accessible via Home cards or More menu */}
             {tab === 'trends'    && <Trends />}
-            {tab === 'help'      && <Help />}
+            {tab === 'coach'     && <Coach />}
             {tab === 'nutrition' && <Nutrition key={dayKey} onToast={showToast} onTabChange={t => handleTabChange(t as AppTab)} />}
-            {tab === 'decode'    && <Decode />}
             {tab === 'coffee'    && <Coffee key={dayKey} onToast={showToast} />}
+            {tab === 'decode'    && <Decode />}
           </Suspense>
         </main>
       </div>
@@ -463,69 +454,19 @@ function AppInner() {
       </Suspense>
 
       {/* ── More menu overlay ── */}
-      {showMore && (
-        <>
-          <div className="more-backdrop" onClick={() => setShowMore(false)} />
-          <div className="more-menu">
-            <div className="more-menu-header">
-              <span className="more-menu-title">More</span>
-              <button className="more-menu-close" onClick={() => setShowMore(false)} aria-label="Close menu">✕</button>
-            </div>
-            <div className="more-menu-grid">
-              {TABS_MORE.map(t => (
-                <button
-                  key={t.id}
-                  className={`more-menu-item ${tab === t.id ? 'more-menu-item-active' : ''}`}
-                  onClick={() => { handleTabChange(t.id); setShowMore(false) }}
-                  aria-label={t.label}
-                >
-                  <span className="more-menu-icon">{t.icon}</span>
-                  <span className="more-menu-label">{t.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* ── Featured secondary tabs ── */}
-      <nav className="secondary-tab-bar" role="navigation" aria-label="Secondary navigation">
-        <div className="secondary-tab-scroll">
-          {TABS_FEATURED.map(t => (
-            <button
-              key={t.id}
-              className={`secondary-tab-btn ${tab === t.id ? 'secondary-tab-active' : ''}`}
-              onClick={() => { handleTabChange(t.id); setShowMore(false) }}
-              aria-label={t.label}
-            >
-              <span className="secondary-tab-icon">{t.icon}</span>
-              <span className="secondary-tab-label">{t.label}</span>
-            </button>
-          ))}
-        </div>
-      </nav>
-
-      {/* ── Primary bottom tab bar ── */}
+      {/* ── Bottom navigation — 4 tabs (industry standard) ── */}
       <nav className="bottom-tab-bar" role="navigation" aria-label="Main navigation">
         {TABS_PRIMARY.map(t => (
           <button
             key={t.id}
             className={`bottom-tab-btn ${tab === t.id ? 'bottom-tab-active' : ''}`}
-            onClick={() => { handleTabChange(t.id); setShowMore(false) }}
+            onClick={() => handleTabChange(t.id)}
             aria-label={t.label}
           >
             <span className="bottom-tab-icon">{t.icon}</span>
             <span className="bottom-tab-label">{t.label}</span>
           </button>
         ))}
-        <button
-          className={`bottom-tab-btn ${TABS_MORE.some(t => t.id === tab) ? 'bottom-tab-active' : ''}`}
-          onClick={() => setShowMore(p => !p)}
-          aria-label="More tabs"
-        >
-          <span className="bottom-tab-icon">{'···'}</span>
-          <span className="bottom-tab-label">More</span>
-        </button>
       </nav>
     </>
   )
