@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import type { DayOutcome, LogPayload } from '../types'
 import { OUTCOME_CONFIGS, NIGHT_SLIDER_CONFIGS, getSliderLabel } from '../data'
-import { EMOTIONS, EMOTION_CATEGORIES, getEmotionById } from '../data/emotions'
+import { EMOTIONS, EMOTION_CATEGORIES } from '../data/emotions'
 import { getTodayPrompt } from '../data/reflections'
 import { todayStr, weekStartStr, getAnchors, getTodayCache, getNightCache, saveNightCache, saveTodayCache } from '../store'
 import { api } from '../api'
@@ -197,7 +197,7 @@ export default function Night({ onToast }: Props) {
           <span className="optional-badge">pick up to 3</span>
         </div>
         <p className="field-hint">
-          Name your emotions — building vocabulary builds self-awareness. Over time, you'll see your emotional patterns decoded.
+          Name your emotions — patterns reveal themselves over time.
         </p>
 
         <div className="emotion-picker">
@@ -229,22 +229,7 @@ export default function Night({ onToast }: Props) {
           ))}
         </div>
 
-        {emotions.length > 0 && (
-          <div className="emotion-selected-row">
-            <span className="emotion-selected-label">Tonight you feel:</span>
-            <div className="emotion-selected-tags">
-              {emotions.map(id => {
-                const em = getEmotionById(id)
-                if (!em) return null
-                return (
-                  <span key={id} className="emotion-selected-chip" style={{ color: em.color, borderColor: em.color }}>
-                    {em.emoji} {em.label}
-                  </span>
-                )
-              })}
-            </div>
-          </div>
-        )}
+        {/* Selected emotions visible as active tags above — no need to repeat */}
       </div>
 
       {/* Step 3 — Focus & Mood sliders */}
