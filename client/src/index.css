@@ -552,10 +552,25 @@ body::before {
   box-shadow: var(--shadow-xs);
 }
 .task-card-error { border-color: var(--miss) !important; box-shadow: 0 0 0 1px oklch(64% 0.22 25 / 0.1), var(--shadow-xs) !important; }
-.task-card-filled { border-color: var(--border2); }
-.task-card-filled[data-pillar="work"]   { background: var(--tint-work);   border-color: color-mix(in oklch, var(--work) 15%, var(--border)); }
-.task-card-filled[data-pillar="future"] { background: var(--tint-future); border-color: color-mix(in oklch, var(--future) 15%, var(--border)); }
-.task-card-filled[data-pillar="body"]   { background: var(--tint-body);   border-color: color-mix(in oklch, var(--body) 15%, var(--border)); }
+.task-card-filled {
+  border-color: var(--border2);
+  border-left: 3px solid var(--border2);
+}
+.task-card-filled[data-pillar="work"] {
+  background: color-mix(in oklch, var(--work) 5%, var(--surface));
+  border-color: color-mix(in oklch, var(--work) 20%, var(--border));
+  border-left-color: var(--work);
+}
+.task-card-filled[data-pillar="future"] {
+  background: color-mix(in oklch, var(--future) 5%, var(--surface));
+  border-color: color-mix(in oklch, var(--future) 20%, var(--border));
+  border-left-color: var(--future);
+}
+.task-card-filled[data-pillar="body"] {
+  background: color-mix(in oklch, var(--body) 5%, var(--surface));
+  border-color: color-mix(in oklch, var(--body) 20%, var(--border));
+  border-left-color: var(--body);
+}
 .task-card-header {
   display: flex;
   align-items: center;
@@ -608,6 +623,13 @@ body::before {
   border-left-color: var(--accent);
   background: oklch(96% 0.003 80);
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 8%, transparent);
+}
+.task-select-filled {
+  background: transparent;
+  border-color: transparent;
+  border-left-color: inherit;
+  font-weight: var(--weight-medium);
+  color: var(--text);
 }
 .task-select option { background: oklch(97% 0.003 80); }
 
@@ -2663,7 +2685,7 @@ select option { background: oklch(97% 0.003 80); }
 /* ── Custom task input ── */
 .task-custom-input {
   width: 100%; margin-top: 8px;
-  background: var(--bg); border: 1px solid var(--border);
+  background: transparent; border: 1px solid var(--border);
   border-left: 3px solid; border-radius: var(--radius-sm);
   padding: 9px 12px; color: var(--text);
   font-family: var(--font-mono); font-size: var(--text-sm);
@@ -4976,6 +4998,36 @@ input:disabled, select:disabled, textarea:disabled {
   font-size: var(--text-xl);
   color: var(--muted);
   flex-shrink: 0;
+}
+
+/* ── Quick Access grid — compact icon buttons ── */
+.more-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: var(--sp-2);
+}
+.more-quick-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: var(--sp-3) var(--sp-2);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color var(--t-base) var(--ease), background var(--t-base) var(--ease);
+}
+.more-quick-btn:hover {
+  border-color: var(--accent);
+  background: color-mix(in oklch, var(--accent) 5%, var(--surface));
+}
+.more-quick-icon { font-size: var(--text-xl); line-height: 1; }
+.more-quick-label {
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-medium);
+  color: var(--muted2);
+  letter-spacing: var(--ls-wide);
 }
 
 .more-footer {

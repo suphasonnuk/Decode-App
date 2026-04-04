@@ -76,49 +76,23 @@ export default function More({ theme, onThemeToggle, onTabChange, onProfileView,
         </button>
       </div>
 
-      {/* Quick Access Cards */}
+      {/* Quick Access — compact grid */}
       <div className="card">
         <div className="card-label">Quick Access</div>
-
-        <button className="more-option-btn" onClick={() => onTabChange('trends')}>
-          <span className="more-option-icon">📊</span>
-          <div className="more-option-content">
-            <div className="more-option-label">Trends & Analytics</div>
-          </div>
-          <span className="more-option-arrow">›</span>
-        </button>
-
-        <button className="more-option-btn" onClick={() => onTabChange('coach')}>
-          <span className="more-option-icon">🤖</span>
-          <div className="more-option-content">
-            <div className="more-option-label">AI Coach</div>
-          </div>
-          <span className="more-option-arrow">›</span>
-        </button>
-
-        <button className="more-option-btn" onClick={() => onTabChange('nutrition')}>
-          <span className="more-option-icon">🥗</span>
-          <div className="more-option-content">
-            <div className="more-option-label">Nutrition Tracker</div>
-          </div>
-          <span className="more-option-arrow">›</span>
-        </button>
-
-        <button className="more-option-btn" onClick={() => onTabChange('coffee')}>
-          <span className="more-option-icon">☕</span>
-          <div className="more-option-content">
-            <div className="more-option-label">Coffee Log</div>
-          </div>
-          <span className="more-option-arrow">›</span>
-        </button>
-
-        <button className="more-option-btn" onClick={() => onTabChange('decode')}>
-          <span className="more-option-icon">🔬</span>
-          <div className="more-option-content">
-            <div className="more-option-label">Decode Yourself</div>
-          </div>
-          <span className="more-option-arrow">›</span>
-        </button>
+        <div className="more-quick-grid">
+          {[
+            { tab: 'trends',    icon: '📊', label: 'Trends' },
+            { tab: 'coach',     icon: '🤖', label: 'AI Coach' },
+            { tab: 'nutrition', icon: '🥗', label: 'Nutrition' },
+            { tab: 'coffee',    icon: '☕', label: 'Coffee' },
+            { tab: 'decode',    icon: '🔬', label: 'Decode' },
+          ].map(item => (
+            <button key={item.tab} className="more-quick-btn" onClick={() => onTabChange(item.tab)}>
+              <span className="more-quick-icon">{item.icon}</span>
+              <span className="more-quick-label">{item.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="more-footer">
