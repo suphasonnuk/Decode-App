@@ -39,7 +39,7 @@ const ROAST_DOSE: Record<Roast, number> = { light: 19, medium: 18, dark: 17 }
 
 const COFFEE_TYPES: CoffeeType[] = [
   {
-    id: 'espresso', name: 'Espresso', icon: '☕', color: 'oklch(80% 0.14 70)',
+    id: 'espresso', name: 'Espresso', icon: '☕', color: 'oklch(50% 0.12 70)',
     tagline: 'Pure. Concentrated. The foundation.',
     base: 'espresso',
     getRecipe: (roast) => ({
@@ -65,7 +65,7 @@ const COFFEE_TYPES: CoffeeType[] = [
     ],
   },
   {
-    id: 'americano', name: 'Americano', icon: '🖤', color: 'oklch(76% 0.10 45)',
+    id: 'americano', name: 'Americano', icon: '🖤', color: 'oklch(45% 0.08 45)',
     tagline: 'Espresso strength, filter coffee volume.',
     base: 'espresso',
     getRecipe: (roast) => ({
@@ -86,7 +86,7 @@ const COFFEE_TYPES: CoffeeType[] = [
     ],
   },
   {
-    id: 'latte', name: 'Latte', icon: '🥛', color: 'oklch(80% 0.10 150)',
+    id: 'latte', name: 'Latte', icon: '🥛', color: 'oklch(48% 0.10 150)',
     tagline: 'Silky microfoam. The everyday essential.',
     base: 'espresso',
     getRecipe: (roast) => ({
@@ -108,7 +108,7 @@ const COFFEE_TYPES: CoffeeType[] = [
     ],
   },
   {
-    id: 'flat_white', name: 'Flat White', icon: '🤍', color: 'oklch(74% 0.12 320)',
+    id: 'flat_white', name: 'Flat White', icon: '🤍', color: 'oklch(46% 0.10 320)',
     tagline: 'Ristretto base. Stronger, tighter, richer.',
     base: 'espresso',
     getRecipe: (roast) => ({
@@ -129,7 +129,7 @@ const COFFEE_TYPES: CoffeeType[] = [
     ],
   },
   {
-    id: 'cappuccino', name: 'Cappuccino', icon: '💫', color: 'oklch(86% 0.14 85)',
+    id: 'cappuccino', name: 'Cappuccino', icon: '💫', color: 'oklch(52% 0.12 85)',
     tagline: 'Equal thirds. The Italian original.',
     base: 'espresso',
     getRecipe: (roast) => ({
@@ -153,9 +153,9 @@ const COFFEE_TYPES: CoffeeType[] = [
 ]
 
 const ROAST_OPTIONS = [
-  { id: 'light',  label: 'Light Roast',  desc: 'Fruity · Bright · Tea-like',       color: 'oklch(78% 0.16 80)' },
-  { id: 'medium', label: 'Medium Roast', desc: 'Balanced · Caramel · Classic',     color: 'oklch(72% 0.14 45)' },
-  { id: 'dark',   label: 'Dark Roast',   desc: 'Bold · Chocolate · Smoky',         color: 'oklch(38% 0.04 50)' },
+  { id: 'light',  label: 'Light Roast',  desc: 'Fruity · Bright · Tea-like',       color: 'oklch(50% 0.14 80)' },
+  { id: 'medium', label: 'Medium Roast', desc: 'Balanced · Caramel · Classic',     color: 'oklch(45% 0.12 45)' },
+  { id: 'dark',   label: 'Dark Roast',   desc: 'Bold · Chocolate · Smoky',         color: 'oklch(35% 0.04 50)' },
 ] as const
 
 interface CoffeeLog {
