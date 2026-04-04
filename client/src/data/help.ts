@@ -65,7 +65,7 @@ export const SCORES_INFO: ScoreInfo[] = [
   },
   {
     icon: '🎯', label: 'Focus', color: 'var(--future)', when: 'Night',
-    desc: 'How well you concentrated today. 1 = scattered, 10 = deep work. Trends shows which conditions lead to your best focus days.',
+    desc: 'How well you concentrated today. 1 = scattered, 10 = deep work. Trends show which conditions lead to your best focus days.',
   },
   {
     icon: '😊', label: 'Mood', color: 'var(--body)', when: 'Night',
