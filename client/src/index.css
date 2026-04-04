@@ -194,7 +194,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   font-kerning: normal;
   min-height: 100vh;
-  padding-bottom: 80px; /* Single bottom navigation bar */
+  padding-bottom: calc(88px + env(safe-area-inset-bottom)); /* Bottom nav (72px) + spacing (16px) + safe area */
 }
 
 /* Tabular numbers for all data / metrics so digits align */
@@ -320,7 +320,7 @@ body::before {
 
 /* ── Tab content ── */
 .tab-content {
-  padding: var(--sp-4) var(--sp-4) 0;
+  padding: var(--sp-4) var(--sp-4) var(--sp-6);
   contain: layout style;
   min-height: 50vh;
   touch-action: pan-y pinch-zoom; /* let browser handle vertical scroll natively */
@@ -3072,7 +3072,7 @@ input:disabled, select:disabled, textarea:disabled {
   padding-bottom: env(safe-area-inset-bottom);
   max-width: 540px;
   margin: 0 auto;
-  box-shadow: 0 -1px 0 oklch(25% 0.008 45 / 0.8);
+  box-shadow: 0 -1px 0 oklch(25% 0.020 50 / 0.08);
   will-change: transform;
   transform: translateZ(0);
 }
