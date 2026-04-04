@@ -57,4 +57,4 @@ export interface HealthResponse {
   auth: boolean
 }
 
-export type Tab = 'anchors' | 'daily' | 'night' | 'week' | 'trends' | 'dashboard' | 'help' | 'coach' | 'nutrition' | 'coffee' | 'decode'
+export type Tab = 'dashboard' | 'daily' | 'review' | 'more' | 'trends' | 'coach' | 'nutrition' | 'coffee' | 'decode'
