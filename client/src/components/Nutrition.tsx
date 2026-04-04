@@ -19,7 +19,7 @@ const NUTRITION_FIELDS = [
   { key: 'carbs_g',   label: 'Carbs',    unit: 'g',    color: 'var(--future)',        max: 1000  },
   { key: 'fat_g',     label: 'Fat',      unit: 'g',    color: 'var(--partial)',       max: 500   },
   { key: 'fiber_g',   label: 'Fiber',    unit: 'g',    color: 'var(--body)',          max: 200   },
-  { key: 'sugar_g',   label: 'Sugar',    unit: 'g',    color: 'oklch(72% 0.14 350)', max: 500   },
+  { key: 'sugar_g',   label: 'Sugar',    unit: 'g',    color: 'oklch(50% 0.14 350)', max: 500   },
   { key: 'sodium_mg', label: 'Sodium',   unit: 'mg',   color: 'var(--muted2)',        max: 10000 },
 ]
 
@@ -85,7 +85,7 @@ function MealCard({ entry, onEdit, onDelete, isDeleting }: {
           {entry.carbs_g   != null && <span style={{ color: 'var(--future)'  }}>C {Math.round(entry.carbs_g)}g</span>}
           {entry.fat_g     != null && <span style={{ color: 'var(--partial)' }}>F {Math.round(entry.fat_g)}g</span>}
           {entry.fiber_g   != null && <span style={{ color: 'var(--body)'    }}>Fb {Math.round(entry.fiber_g)}g</span>}
-          {entry.sugar_g   != null && <span style={{ color: 'oklch(72% 0.14 350)' }}>S {Math.round(entry.sugar_g)}g</span>}
+          {entry.sugar_g   != null && <span style={{ color: 'oklch(50% 0.14 350)' }}>S {Math.round(entry.sugar_g)}g</span>}
         </div>
       )}
       {/* Health impact — parsed from ai_analysis if available */}
@@ -124,7 +124,7 @@ function HealthImpactCard({ impact }: { impact: HealthImpact }) {
             {cfg.label}
           </div>
         </div>
-        <span style={{ fontSize: 11, color: 'var(--muted2)', paddingRight: 2 }}>
+        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--muted2)', paddingRight: 2 }}>
           {expanded ? '▲' : '▼'}
         </span>
       </div>
@@ -314,7 +314,7 @@ export default function Nutrition({ onToast, onTabChange }: Props) {
       .finally(() => setLoading(false))
   }, [userId])
 
-  useEffect(() => { fetchToday() }, [])
+  useEffect(() => { fetchToday() }, [fetchToday])
 
   // ── Image resize — with onerror to prevent infinite hang ───────────────────
   const resizeImage = (dataUrl: string, maxPx = 800): Promise<{ base64: string; mediaType: string }> =>
@@ -612,7 +612,7 @@ export default function Nutrition({ onToast, onTabChange }: Props) {
                 <MacroBar label="Carbs"   value={totals.carbs_g}   target={TARGETS.carbs_g}   color="var(--future)"  />
                 <MacroBar label="Fat"     value={totals.fat_g}     target={TARGETS.fat_g}     color="var(--partial)" />
                 <MacroBar label="Fiber"   value={totals.fiber_g}   target={TARGETS.fiber_g}   color="var(--body)"    />
-                <MacroBar label="Sugar"   value={totals.sugar_g}   target={TARGETS.sugar_g}   color="oklch(72% 0.14 350)" />
+                <MacroBar label="Sugar"   value={totals.sugar_g}   target={TARGETS.sugar_g}   color="oklch(50% 0.14 350)" />
               </div>
             )}
           </div>
