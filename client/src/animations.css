@@ -75,7 +75,7 @@
   to   { opacity: 1; transform: scaleY(1); transform-origin: top; }
 }
 @keyframes barGrow {
-  from { width: 0; }
+  from { transform: scaleX(0); }
 }
 
 /* ── Splash screen — premium loading ─────────────── */
@@ -86,8 +86,8 @@
   gap: var(--sp-4);
   animation: fadeIn 0.35s var(--ease) both;
   background:
-    radial-gradient(ellipse at 50% 40%, oklch(15% 0.018 195 / 0.4) 0%, transparent 50%),
-    radial-gradient(ellipse at 30% 70%, oklch(13% 0.010 220 / 0.25) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 40%, oklch(16% 0.016 185 / 0.4) 0%, transparent 50%),
+    radial-gradient(ellipse at 30% 70%, oklch(14% 0.010 45 / 0.25) 0%, transparent 50%),
     var(--bg);
 }
 .splash-logo {
@@ -149,7 +149,11 @@
     border-color var(--t-base) var(--ease);
 }
 .done-btn {
-  transition: all var(--t-base) var(--ease);
+  transition:
+    background var(--t-base) var(--ease),
+    border-color var(--t-base) var(--ease),
+    color var(--t-base) var(--ease),
+    transform var(--t-fast) var(--ease);
 }
 .done-btn:active     { transform: scale(0.94); }
 .done-btn-active     { animation: scaleIn 0.2s var(--ease-out-quint) both; }
@@ -177,25 +181,28 @@
 .energy-slider:hover::-webkit-slider-thumb,
 .energy-slider:active::-webkit-slider-thumb {
   transform: scale(1.25);
-  box-shadow: 0 0 0 7px oklch(58% 0.14 195 / 0.12);
+  box-shadow: 0 0 0 7px oklch(58% 0.12 185 / 0.12);
 }
 
 /* ── Tab button active bar ───────────────────────── */
 .tab-btn::after {
   content: '';
   display: block;
-  height: 2px; width: 0;
+  height: 2px; width: 100%; /* full width, scale controls visibility */
   background: var(--accent);
   border-radius: 1px;
   margin-top: 3px;
-  transition: width var(--t-base) var(--ease);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--t-base) var(--ease);
 }
-.tab-btn-active::after { width: 100%; }
+.tab-btn-active::after { transform: scaleX(1); }
 
 /* ── Macro/progress bars ─────────────────────────── */
 .nutr-macro-bar-fill,
 .dash-today-bar-fill {
-  animation: barGrow 0.5s var(--ease) both;
+  animation: barGrow 0.5s var(--ease-out-quint) both;
+  transform-origin: left center; /* barGrow uses scaleX — must scale from left edge */
 }
 
 /* ── Daily status bar ────────────────────────────── */
@@ -207,7 +214,7 @@
   transition: background var(--t-fast) var(--ease);
   animation: fadeSlideDown 0.15s var(--ease) both;
 }
-.daily-status-active { background: oklch(58% 0.14 195 / 0.04) !important; }
+.daily-status-active { background: oklch(58% 0.12 185 / 0.04) !important; }
 .daily-status-done    { color: var(--win); }
 .daily-status-morning { color: var(--work); }
 .daily-status-night   { color: var(--body); }
@@ -234,8 +241,8 @@
   display: flex; align-items: center; justify-content: center;
   padding: var(--sp-6);
   background:
-    radial-gradient(ellipse at 30% 20%, oklch(15% 0.018 195 / 0.4) 0%, transparent 50%),
-    radial-gradient(ellipse at 70% 80%, oklch(13% 0.010 220 / 0.3) 0%, transparent 50%),
+    radial-gradient(ellipse at 30% 20%, oklch(16% 0.016 185 / 0.4) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 80%, oklch(14% 0.010 45 / 0.3) 0%, transparent 50%),
     var(--bg);
 }
 .onboard-card {
@@ -256,7 +263,7 @@
   height: 3px;
   background: linear-gradient(90deg, var(--work), var(--accent), var(--body));
 }
-.onboard-enter { animation: springIn 0.45s var(--ease-out-quint) both; }
+.onboard-enter { animation: fadeSlideUp 0.45s var(--ease-out-quint) both; }
 .onboard-exit  { animation: scaleIn 0.2s var(--ease) reverse both; }
 .onboard-emoji {
   font-size: 56px; margin-bottom: var(--sp-5); display: block;
@@ -284,7 +291,7 @@
 .onboard-dot {
   width: 6px; height: 6px; border-radius: 50%;
   background: var(--border2);
-  transition: all var(--t-base) var(--ease-out-quint);
+  transition: background var(--t-base) var(--ease-out-quint), transform var(--t-base) var(--ease-out-quint);
 }
 .onboard-dot-active {
   background: var(--accent);
@@ -323,12 +330,12 @@
 }
 .toast-ok {
   background: oklch(74% 0.16 160 / 0.95);
-  color: oklch(8% 0.012 260);
+  color: oklch(11% 0.010 45);
   box-shadow: 0 4px 12px oklch(74% 0.16 160 / 0.25), 0 12px 32px oklch(74% 0.16 160 / 0.15), inset 0 1px 0 oklch(100% 0 0 / 0.15);
 }
 .toast-err {
   background: oklch(64% 0.22 25 / 0.95);
-  color: oklch(94% 0.006 260);
+  color: oklch(93% 0.008 60);
   box-shadow: 0 4px 12px oklch(64% 0.22 25 / 0.25), 0 12px 32px oklch(64% 0.22 25 / 0.15), inset 0 1px 0 oklch(100% 0 0 / 0.1);
 }
 .toast-show {
@@ -364,8 +371,8 @@
 /* ── Spinner ─────────────────────────────────────── */
 .spinner {
   width: 13px; height: 13px;
-  border: 2px solid oklch(8% 0.012 260 / 0.25);
-  border-top-color: oklch(8% 0.012 260);
+  border: 2px solid oklch(11% 0.010 45 / 0.25);
+  border-top-color: oklch(11% 0.010 45);
   border-radius: 50%;
   animation: spin 0.55s linear infinite;
   display: none;
@@ -408,13 +415,7 @@
   transition: background var(--t-base) var(--ease);
   border-radius: var(--radius-sm);
 }
-.dash-today-step:hover { background: oklch(94% 0.006 260 / 0.04); }
-
-/* ── Nutr macro bar fill ─────────────────────────── */
-.nutr-macro-bar-fill {
-  transition: width 0.5s var(--ease);
-  animation: barGrow 0.5s var(--ease) both;
-}
+.dash-today-step:hover { background: oklch(93% 0.008 60 / 0.04); }
 
 /* ── Confetti celebration ───────────────────────── */
 @keyframes confettiFall {

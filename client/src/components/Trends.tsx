@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import type { TrendPoint } from '../types'
 import { parseBQDate } from '../store'
 import { api } from '../api'
@@ -77,51 +77,53 @@ function Sparkline({ data, color, height = 56 }: { data: (number | null)[], colo
 
 type HeatmapMetric = 'energy' | 'focus' | 'mood'
 
+// Module-scope constants — never change between renders
+const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+const HEATMAP_COLORS: Record<HeatmapMetric, string> = {
+  energy: '72% 0.14 230',
+  focus:  '78% 0.16 80',
+  mood:   '74% 0.16 160',
+}
+function cellColor(val: number | null, metric: HeatmapMetric): string {
+  if (val == null) return 'var(--border)'
+  const c = HEATMAP_COLORS[metric]
+  if (val >= 9) return `oklch(${c})`
+  if (val >= 7) return `oklch(${c} / 0.7)`
+  if (val >= 5) return `oklch(${c} / 0.4)`
+  if (val >= 3) return `oklch(${c} / 0.2)`
+  return `oklch(${c} / 0.1)`
+}
+
 function Heatmap({ points }: { points: TrendPoint[] }) {
   const [metric, setMetric] = useState<HeatmapMetric>('energy')
   const metricKey = metric === 'energy' ? 'energy_level' : metric === 'focus' ? 'focus_level' : 'mood_level'
 
-  // Build a map of date -> value
-  const dataMap: Record<string, number | null> = {}
-  for (const p of points) {
-    dataMap[p.log_date] = p[metricKey]
-  }
-
-  // Generate 90 days of dates for the heatmap
-  const today = new Date()
-  const days: { date: string; val: number | null; dayOfWeek: number }[] = []
-  for (let i = 89; i >= 0; i--) {
-    const d = new Date(today)
-    d.setDate(d.getDate() - i)
-    const dateStr = localDateStr(d)
-    days.push({ date: dateStr, val: dataMap[dateStr] ?? null, dayOfWeek: d.getDay() })
-  }
-
-  // Group into weeks (columns)
-  const weeks: typeof days[] = []
-  let currentWeek: typeof days = []
-  for (const day of days) {
-    if (day.dayOfWeek === 0 && currentWeek.length > 0) {
-      weeks.push(currentWeek)
-      currentWeek = []
+  // Recompute the 90-day grid only when points or metric changes
+  const { days, weeks } = useMemo(() => {
+    const dataMap: Record<string, number | null> = {}
+    for (const p of points) {
+      dataMap[p.log_date] = p[metricKey]
     }
-    currentWeek.push(day)
-  }
-  if (currentWeek.length > 0) weeks.push(currentWeek)
+    const today = new Date()
+    const days: { date: string; val: number | null; dayOfWeek: number }[] = []
+    for (let i = 89; i >= 0; i--) {
+      const d = new Date(today)
+      d.setDate(d.getDate() - i)
+      const dateStr = localDateStr(d)
+      days.push({ date: dateStr, val: dataMap[dateStr] ?? null, dayOfWeek: d.getDay() })
+    }
+    const weeks: typeof days[] = []
+    let currentWeek: typeof days = []
+    for (const day of days) {
+      if (day.dayOfWeek === 0 && currentWeek.length > 0) { weeks.push(currentWeek); currentWeek = [] }
+      currentWeek.push(day)
+    }
+    if (currentWeek.length > 0) weeks.push(currentWeek)
+    return { days, weeks }
+  }, [points, metricKey])
 
   const cellSize = 14
   const gap = 2
-
-  function cellColor(val: number | null): string {
-    if (val == null) return 'var(--border)'
-    if (val >= 9) return metric === 'energy' ? 'oklch(72% 0.16 250)' : metric === 'focus' ? 'oklch(78% 0.16 80)' : 'oklch(74% 0.16 160)'
-    if (val >= 7) return metric === 'energy' ? 'oklch(72% 0.16 250 / 0.7)' : metric === 'focus' ? 'oklch(78% 0.16 80 / 0.7)' : 'oklch(74% 0.16 160 / 0.7)'
-    if (val >= 5) return metric === 'energy' ? 'oklch(72% 0.16 250 / 0.4)' : metric === 'focus' ? 'oklch(78% 0.16 80 / 0.4)' : 'oklch(74% 0.16 160 / 0.4)'
-    if (val >= 3) return metric === 'energy' ? 'oklch(72% 0.16 250 / 0.2)' : metric === 'focus' ? 'oklch(78% 0.16 80 / 0.2)' : 'oklch(74% 0.16 160 / 0.2)'
-    return metric === 'energy' ? 'oklch(72% 0.16 250 / 0.1)' : metric === 'focus' ? 'oklch(78% 0.16 80 / 0.1)' : 'oklch(74% 0.16 160 / 0.1)'
-  }
-
-  const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
   const svgWidth = weeks.length * (cellSize + gap) + 20
   const svgHeight = 7 * (cellSize + gap) + 4
 
@@ -149,7 +151,7 @@ function Heatmap({ points }: { points: TrendPoint[] }) {
         <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} style={{ width: '100%', height: svgHeight, display: 'block' }}>
           {/* Day labels */}
           {[1, 3, 5].map(d => (
-            <text key={d} x={0} y={d * (cellSize + gap) + cellSize - 3} fontSize={8} fill="var(--muted)">{dayLabels[d]}</text>
+            <text key={d} x={0} y={d * (cellSize + gap) + cellSize - 3} fontSize={8} fill="var(--muted)">{DAY_LABELS[d]}</text>
           ))}
           {/* Cells */}
           {weeks.map((week, wi) => (
@@ -161,7 +163,7 @@ function Heatmap({ points }: { points: TrendPoint[] }) {
                 width={cellSize}
                 height={cellSize}
                 rx={3}
-                fill={cellColor(day.val)}
+                fill={cellColor(day.val, metric)}
                 style={{ transition: 'fill 0.2s' }}
               >
                 <title>{day.date}: {day.val ?? 'no data'}</title>
@@ -173,7 +175,7 @@ function Heatmap({ points }: { points: TrendPoint[] }) {
       <div className="heatmap-legend">
         <span className="heatmap-legend-label">Less</span>
         {[null, 2, 4, 6, 8, 10].map((v, i) => (
-          <div key={i} className="heatmap-legend-cell" style={{ background: cellColor(v) }} />
+          <div key={i} className="heatmap-legend-cell" style={{ background: cellColor(v, metric) }} />
         ))}
         <span className="heatmap-legend-label">More</span>
       </div>
@@ -207,35 +209,33 @@ export default function Trends() {
     </div>
   )
 
-  const energy  = points.map(p => p.energy_level)
-  const focus   = points.map(p => p.focus_level)
-  const mood    = points.map(p => p.mood_level)
-
-  const avgEnergy = avg(energy)
-  const avgFocus  = avg(focus)
-  const avgMood   = avg(mood)
-
-  const daysLogged = points.filter(p => p.day_outcome).length
-  const winCount   = points.filter(p => p.day_outcome === 'win').length
-  const winRate    = daysLogged > 0 ? Math.round((winCount / daysLogged) * 100) : 0
-
-  // Weekly win rates for bar chart
-  const weeks: Record<string, { total: number, wins: number, label: string }> = {}
-  for (const p of points) {
-    const d = new Date(p.log_date + 'T12:00:00')
-    d.setDate(d.getDate() - d.getDay())
-    const wk = localDateStr(d)
-    const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-    if (!weeks[wk]) weeks[wk] = { total: 0, wins: 0, label }
-    if (p.day_outcome) { weeks[wk].total++; if (p.day_outcome === 'win') weeks[wk].wins++ }
-  }
-  const weekBars = Object.entries(weeks).sort(([a],[b]) => a.localeCompare(b)).slice(-8)
-
-  const charts = [
-    { label: 'Energy',    icon: '⚡', data: energy, color: 'var(--work)',   val: avgEnergy },
-    { label: 'Focus',     icon: '🎯', data: focus,  color: 'var(--future)', val: avgFocus  },
-    { label: 'Mood',      icon: '😊', data: mood,   color: 'var(--body)',   val: avgMood   },
-  ]
+  const { energy, focus, mood, avgEnergy, avgFocus, avgMood, daysLogged, winCount, winRate, weekBars, charts } = useMemo(() => {
+    const energy  = points.map(p => p.energy_level)
+    const focus   = points.map(p => p.focus_level)
+    const mood    = points.map(p => p.mood_level)
+    const avgEnergy = avg(energy)
+    const avgFocus  = avg(focus)
+    const avgMood   = avg(mood)
+    const daysLogged = points.filter(p => p.day_outcome).length
+    const winCount   = points.filter(p => p.day_outcome === 'win').length
+    const winRate    = daysLogged > 0 ? Math.round((winCount / daysLogged) * 100) : 0
+    const weeksMap: Record<string, { total: number, wins: number, label: string }> = {}
+    for (const p of points) {
+      const d = new Date(p.log_date + 'T12:00:00')
+      d.setDate(d.getDate() - d.getDay())
+      const wk = localDateStr(d)
+      const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      if (!weeksMap[wk]) weeksMap[wk] = { total: 0, wins: 0, label }
+      if (p.day_outcome) { weeksMap[wk].total++; if (p.day_outcome === 'win') weeksMap[wk].wins++ }
+    }
+    const weekBars = Object.entries(weeksMap).sort(([a],[b]) => a.localeCompare(b)).slice(-8)
+    const charts = [
+      { label: 'Energy', icon: '⚡', data: energy, color: 'var(--work)',   val: avgEnergy },
+      { label: 'Focus',  icon: '🎯', data: focus,  color: 'var(--future)', val: avgFocus  },
+      { label: 'Mood',   icon: '😊', data: mood,   color: 'var(--body)',   val: avgMood   },
+    ]
+    return { energy, focus, mood, avgEnergy, avgFocus, avgMood, daysLogged, winCount, winRate, weekBars, charts }
+  }, [points])
 
   return (
     <div>
