@@ -80,9 +80,9 @@ type HeatmapMetric = 'energy' | 'focus' | 'mood'
 // Module-scope constants — never change between renders
 const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 const HEATMAP_COLORS: Record<HeatmapMetric, string> = {
-  energy: '72% 0.14 230',
-  focus:  '78% 0.16 80',
-  mood:   '74% 0.16 160',
+  energy: '64% 0.15 230',  // deeper blue — more saturated for better visibility
+  focus:  '66% 0.16 60',   // warm amber — matches future pillar tone
+  mood:   '62% 0.15 150',  // fresh green — matches body pillar tone
 }
 function cellColor(val: number | null, metric: HeatmapMetric): string {
   if (val == null) return 'var(--border)'
