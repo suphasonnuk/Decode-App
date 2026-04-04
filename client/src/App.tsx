@@ -141,12 +141,12 @@ function useOfflineStatus() {
   return { isOffline, pendingCount }
 }
 
-function getStoredTheme(): 'dark' | 'light' {
-  try { return (localStorage.getItem('decode_theme') as 'dark' | 'light') || 'light' } catch { return 'light' }
+function getStoredTheme(): 'light' | 'dark' {
+  try { return (localStorage.getItem('decode_theme') as 'light' | 'dark') || 'light' } catch { return 'light' }
 }
 
 function AppInner() {
-  const [theme, setTheme] = useState<'dark' | 'light'>(getStoredTheme)
+  const [theme, setTheme] = useState<'light' | 'dark'>(getStoredTheme)
   const [authed,        setAuthed]       = useState<boolean | null>(null)
   const [needsAuth,     setNeedsAuth]    = useState(false)
   const [showOnboard,   setShowOnboard]  = useState(false)
