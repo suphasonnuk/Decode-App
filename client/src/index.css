@@ -20,6 +20,28 @@
   --partial:  oklch(68% 0.13 65);    /* = future */
   --miss:     oklch(60% 0.14 20);    /* soft coral — gentle alert */
 
+  /* ── Urgency & status scale ── */
+  --chill:    oklch(62% 0.10 210);   /* soft blue — optional, low priority */
+  --info:     oklch(56% 0.13 230);   /* deeper blue — informational */
+  --urgent:   oklch(64% 0.14 50);    /* warm orange — needs attention */
+  --overdue:  oklch(58% 0.15 15);    /* alert coral — critical */
+  --success:  oklch(58% 0.12 145);   /* vibrant green — confirmation */
+
+  /* ── Tinted backgrounds for context — subtle color washes ── */
+  --tint-work:    oklch(97% 0.008 230);   /* barely-there blue */
+  --tint-future:  oklch(97% 0.008 65);    /* barely-there amber */
+  --tint-body:    oklch(97% 0.008 150);   /* barely-there green */
+  --tint-accent:  oklch(97% 0.008 190);   /* barely-there teal */
+
+  /* ── Icon colorization utilities ── */
+  --icon-work:    var(--work);
+  --icon-future:  var(--future);
+  --icon-body:    var(--body);
+  --icon-accent:  var(--accent);
+  --icon-success: var(--success);
+  --icon-info:    var(--info);
+  --icon-urgent:  var(--urgent);
+
   /* ── Typography ── */
   --font-mono:    'DM Mono', ui-monospace, monospace;
   --font-display: 'Instrument Serif', Georgia, serif;
@@ -514,6 +536,9 @@ body::before {
 }
 .task-card-error { border-color: var(--miss) !important; box-shadow: 0 0 0 1px oklch(64% 0.22 25 / 0.1), var(--shadow-xs) !important; }
 .task-card-filled { border-color: var(--border2); }
+.task-card-filled[data-pillar="work"]   { background: var(--tint-work);   border-color: color-mix(in oklch, var(--work) 15%, var(--border)); }
+.task-card-filled[data-pillar="future"] { background: var(--tint-future); border-color: color-mix(in oklch, var(--future) 15%, var(--border)); }
+.task-card-filled[data-pillar="body"]   { background: var(--tint-body);   border-color: color-mix(in oklch, var(--body) 15%, var(--border)); }
 .task-card-header {
   display: flex;
   align-items: center;
@@ -537,10 +562,10 @@ body::before {
   transition: background var(--t-base) var(--ease), color var(--t-base) var(--ease), border-color var(--t-base) var(--ease), opacity var(--t-base) var(--ease), transform var(--t-base) var(--ease);
   white-space: nowrap;
 }
-.done-btn:hover { border-color: var(--win); color: var(--win); background: oklch(74% 0.16 160 / 0.06); }
+.done-btn:hover { border-color: var(--success); color: var(--success); background: color-mix(in oklch, var(--success) 6%, transparent); }
 .done-btn-active {
-  border-color: var(--win) !important; color: var(--win) !important;
-  background: oklch(74% 0.16 160 / 0.1) !important;
+  border-color: var(--success) !important; color: var(--success) !important;
+  background: color-mix(in oklch, var(--success) 12%, transparent) !important;
 }
 
 .task-select {
@@ -665,8 +690,8 @@ body::before {
 .outcome-card:hover { border-color: var(--border2); box-shadow: var(--shadow-sm); }
 .outcome-card-active {
   border-color: var(--outcome-color) !important;
-  background: color-mix(in srgb, var(--outcome-color) 8%, transparent) !important;
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--outcome-color) 15%, transparent), var(--shadow-sm) !important;
+  background: color-mix(in oklch, var(--outcome-color) 10%, transparent) !important;
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--outcome-color) 20%, transparent), var(--shadow-sm) !important;
 }
 .outcome-card-error { border-color: var(--miss) !important; }
 .outcome-card-emoji { font-size: 22px; flex-shrink: 0; }
@@ -1973,8 +1998,8 @@ select option { background: oklch(97% 0.003 80); }
 .dash-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--sp-4); }
 .dash-card-title  { font-size: 11px; letter-spacing: 0.3px; font-weight: 600; color: var(--muted); }
 .dash-card-pct    { font-family: var(--font-display); font-weight: 700; font-size: 16px; }
-.dash-card-link   { background: none; border: none; font-family: var(--font-mono); font-size: 11px; color: var(--muted2); cursor: pointer; }
-.dash-card-link:hover { color: var(--text); }
+.dash-card-link   { background: none; border: none; font-family: var(--font-mono); font-size: 11px; color: var(--accent); cursor: pointer; }
+.dash-card-link:hover { color: oklch(from var(--accent) calc(l - 0.08) c h); text-decoration: underline; }
 .dash-card-cta    { font-size: 11px; color: var(--accent); margin-top: 10px; letter-spacing: 0.3px; }
 
 /* Today progress ring */
@@ -3098,7 +3123,7 @@ input:disabled, select:disabled, textarea:disabled {
 .bottom-tab-btn:hover  { color: var(--muted2); }
 .bottom-tab-btn:active { transform: scale(0.88); transition-duration: 0.06s; }
 
-.bottom-tab-active { color: var(--text) !important; }
+.bottom-tab-active { color: var(--accent) !important; }
 
 /* Active indicator — clean pill above icon */
 .bottom-tab-active::before {

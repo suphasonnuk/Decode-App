@@ -260,12 +260,12 @@ function getHeaderMessage(s: ReturnType<typeof getDailyStatus>, pct: number) {
 
 // ── Urgency styles ────────────────────────────────────────────────────────────
 const URGENCY_BADGE_STYLE: Record<string, { bg: string; color: string }> = {
-  chill:   { bg: 'oklch(60% 0.10 230 / 0.12)',  color: 'var(--work)'    },
-  normal:  { bg: 'oklch(58% 0.12 185 / 0.15)',   color: 'var(--accent)'  },
-  urgent:  { bg: 'oklch(78% 0.16 80 / 0.2)',    color: 'var(--partial)' },
-  overdue: { bg: 'oklch(62% 0.18 25 / 0.18)',   color: 'var(--miss)'    },
-  none:    { bg: 'oklch(93% 0.008 60 / 0.06)', color: 'var(--muted2)'  },
-  Tonight: { bg: 'oklch(76% 0.12 150 / 0.1)',   color: 'var(--body)'    },
+  chill:   { bg: 'color-mix(in oklch, var(--chill) 12%, transparent)',   color: 'var(--chill)'   },
+  normal:  { bg: 'color-mix(in oklch, var(--info) 15%, transparent)',    color: 'var(--info)'    },
+  urgent:  { bg: 'color-mix(in oklch, var(--urgent) 18%, transparent)',  color: 'var(--urgent)'  },
+  overdue: { bg: 'color-mix(in oklch, var(--overdue) 20%, transparent)', color: 'var(--overdue)' },
+  none:    { bg: 'color-mix(in oklch, var(--border) 6%, transparent)',  color: 'var(--muted2)'  },
+  Tonight: { bg: 'color-mix(in oklch, var(--body) 10%, transparent)',    color: 'var(--body)'    },
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
