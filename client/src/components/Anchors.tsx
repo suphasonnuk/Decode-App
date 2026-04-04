@@ -1,8 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import type { WeekAnchors } from '../types'
 import { TASK_CATEGORIES } from '../data'
 import { getAnchors, saveAnchors, weekStartStr } from '../store'
 import { api } from '../api'
+
+// Static derivation — shape never changes, computed once at module load
+const ANCHOR_CONFIGS = TASK_CATEGORIES.map(cat => ({
+  key: cat.key, color: cat.color, label: cat.label, icon: cat.icon, hint: cat.anchor_hint,
+}))
 
 interface Props { onSaved: () => void }
 
@@ -12,10 +17,10 @@ export default function Anchors({ onSaved }: Props) {
   const [syncMsg, setSyncMsg]   = useState('')
   const [saved,   setSaved]     = useState(false)
 
-  const weekLabel = (() => {
+  const weekLabel = useMemo(() => {
     const d = new Date(weekStartStr() + 'T12:00:00')
     return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })
-  })()
+  }, [])
 
   useEffect(() => {
     api.getWeekAnchors()
@@ -46,11 +51,6 @@ export default function Anchors({ onSaved }: Props) {
     onSaved()
   }
 
-  // Config pulled from data/tasks.ts — change labels/icons/hints there
-  const configs = TASK_CATEGORIES.map(cat => ({
-    key: cat.key, color: cat.color, label: cat.label, icon: cat.icon, hint: cat.anchor_hint,
-  }))
-
   return (
     <div>
       <div className="page-intro">
@@ -71,7 +71,7 @@ export default function Anchors({ onSaved }: Props) {
         <strong>How to use:</strong> Write one clear intention per category. These stay visible in the WEEK tab all week — they're your compass, not your to-do list.
       </div>
 
-      {configs.map(({ key, color, label, icon, hint }) => (
+      {ANCHOR_CONFIGS.map(({ key, color, label, icon, hint }) => (
         <div className="anchor-field" key={key}>
           <div className="anchor-field-header">
             <span className="anchor-field-icon">{icon}</span>

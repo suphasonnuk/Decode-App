@@ -1,29 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import type { LogRow, LogPayload } from '../types'
 import { getAnchors, weekDates, getDayCache, getNightCacheForDate, todayStr, weekStartForOffset, parseBQDate } from '../store'
 import { api } from '../api'
 import { TASK_CATEGORIES, TASK_OPTIONS, OUTCOME_CONFIGS, DAYS_FULL, DAYS_SHORT } from '../data'
 import { alpha } from '../lib/color'
 
-function ScoreBadge({ value, color }: { value: number | null | undefined; color: string }) {
-  if (value == null) return <span className="score-badge score-badge-empty">—</span>
-  return (
-    <span className="score-badge" style={{ background: alpha(color, 10), color, borderColor: alpha(color, 25) }}>
-      {value}
-    </span>
-  )
-}
 
-function OutcomePill({ outcome }: { outcome: string | null | undefined }) {
-  if (!outcome) return <span className="outcome-pill outcome-pill-empty">—</span>
-  const cfg = OUTCOME_CONFIGS.find(o => o.id === outcome)
-  if (!cfg) return <span className="outcome-pill outcome-pill-empty">—</span>
-  return (
-    <span className="outcome-pill" style={{ color: cfg.color, borderColor: alpha(cfg.color, 25), background: alpha(cfg.color, 8) }}>
-      {cfg.emoji} {cfg.shortLabel}
-    </span>
-  )
-}
 
 export default function Week() {
   const [weekOffset,  setWeekOffset]  = useState(0)
@@ -38,11 +20,19 @@ export default function Week() {
 
   const anchors   = getAnchors()
   const weekStart = weekStartForOffset(weekOffset)
-  const dates     = weekDates(weekStart)
   const today     = todayStr()
   const isCurrent = weekOffset === 0
 
-  const fetchWeek = (offset = weekOffset) => {
+  const dates = useMemo(() => weekDates(weekStart), [weekStart])
+
+  const weekRangeLabel = useMemo(() => {
+    const start = new Date(weekStart + 'T12:00:00')
+    const end   = new Date(start); end.setDate(start.getDate() + 6)
+    const fmt   = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    return `${fmt(start)} – ${fmt(end)}`
+  }, [weekStart])
+
+  const fetchWeek = useCallback((offset = weekOffset) => {
     const start  = weekStartForOffset(offset)
     const isCurr = offset === 0
     setLoading(true)
@@ -53,11 +43,11 @@ export default function Week() {
       .then(([rows, s]) => { setWeekData(rows); if (s) setStreak(s) })
       .catch(() => {})
       .finally(() => setLoading(false))
-  }
+  }, [weekOffset])
 
   useEffect(() => { fetchWeek(weekOffset) }, [weekOffset])
 
-  const getRow = (date: string): Partial<LogRow> => {
+  const getRow = useCallback((date: string): Partial<LogRow> => {
     const serverRow = weekData.find(r => parseBQDate(r.log_date) === date)
     if (serverRow) return serverRow
     const day   = getDayCache(date)
@@ -65,10 +55,10 @@ export default function Week() {
     if (!night) return day
     const { emotions: ems, ...nightRest } = night
     return { ...day, ...nightRest, day_outcome: night.outcome ?? undefined, emotions: ems?.join(',') || undefined }
-  }
+  }, [weekData])
 
-  const rowData = dates.map(date => ({ date, row: getRow(date) }))
-  const wins    = rowData.filter(d => d.row.day_outcome === 'win').length
+  const rowData = useMemo(() => dates.map(date => ({ date, row: getRow(date) })), [dates, getRow])
+  const wins    = useMemo(() => rowData.filter(d => d.row.day_outcome === 'win').length, [rowData])
 
   const openEdit = (date: string, row: Partial<LogRow>) => {
     setEditRow(date); setEditPayload({ ...row }); setEditMsg('')
@@ -103,13 +93,6 @@ export default function Week() {
     } catch (err) { setEditMsg(err instanceof Error ? err.message : 'Save failed') }
     finally { setEditSaving(false) }
   }
-
-  const weekRangeLabel = (() => {
-    const start = new Date(weekStart + 'T12:00:00')
-    const end   = new Date(start); end.setDate(start.getDate() + 6)
-    const fmt   = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-    return `${fmt(start)} – ${fmt(end)}`
-  })()
 
   return (
     <div>

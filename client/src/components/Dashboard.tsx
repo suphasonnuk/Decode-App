@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import type { Tab, LogRow } from '../types'
 import type { Achievement, UserStats } from '../achievements'
 import type { UserProfile } from '../store'
@@ -305,17 +305,23 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
     }
   }
 
-  // Computed stats
-  const daysWithOutcome = weekData.filter(r => r.day_outcome)
-  const wins            = daysWithOutcome.filter(r => r.day_outcome === 'win').length
-  const winRateWeek     = daysWithOutcome.length > 0 ? Math.round((wins/daysWithOutcome.length)*100) : null
-  const avgOf = (key: keyof LogRow) => {
-    const vals = weekData.map(r => r[key]).filter((v): v is number => typeof v === 'number' && v > 0)
-    return vals.length ? Math.round((vals.reduce((a:number,b:number)=>a+b,0)/vals.length)*10)/10 : null
-  }
-  const avgEnergy = avgOf('energy_level')
-  const avgFocus  = avgOf('focus_level')
-  const avgMood   = avgOf('mood_level')
+  // Computed stats — memoized so profile-form keystrokes don't re-run these
+  const { wins, winRateWeek, avgEnergy, avgFocus, avgMood } = useMemo(() => {
+    const daysWithOutcome = weekData.filter(r => r.day_outcome)
+    const wins            = daysWithOutcome.filter(r => r.day_outcome === 'win').length
+    const winRateWeek     = daysWithOutcome.length > 0 ? Math.round((wins / daysWithOutcome.length) * 100) : null
+    const avgOf = (key: keyof LogRow) => {
+      const vals = weekData.map(r => r[key]).filter((v): v is number => typeof v === 'number' && v > 0)
+      return vals.length ? Math.round((vals.reduce((a: number, b: number) => a + b, 0) / vals.length) * 10) / 10 : null
+    }
+    return {
+      wins,
+      winRateWeek,
+      avgEnergy: avgOf('energy_level'),
+      avgFocus:  avgOf('focus_level'),
+      avgMood:   avgOf('mood_level'),
+    }
+  }, [weekData])
 
   const lossMsg    = getLossMessage(streak?.current ?? 0, nightDone, hour)
   const streakRisk = getStreakRisk(hour, nightDone)
@@ -340,7 +346,7 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
     },
     {
       label: 'Meal logged',     done: mealLogged,    icon: '🥗',
-      tab: 'nutrition' as any,  sub: mealLogged ? 'Logged ✓' : 'Log meal',
+      tab: 'nutrition' as Tab,  sub: mealLogged ? 'Logged ✓' : 'Log meal',
     },
     {
       label: 'Day closed',      done: nightDone,     icon: '🌙',
@@ -349,28 +355,33 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
   ]
   const todayPct = Math.round((todaySteps.filter(s=>s.done).length / todaySteps.length) * 100)
 
-  const dates       = weekDates()
+  // weekDates is stable within a day (component remounts at midnight)
+  const dates         = useMemo(() => weekDates(), [])
   const todayLocalStr = todayStr()
 
-  const stats: UserStats = {
-    currentStreak: streak?.current ?? 0,
-    winRatePct: winRateWeek ?? 0,
-    avgEnergy: avgEnergy ?? 0,
-    totalWins: wins,
-    longestStreak: streak?.longest30 ?? 0,
-  }
-  const unlockedAch = getUnlockedAchievements(stats)
-  const lockedAch   = ALL_ACHIEVEMENTS.filter(a => !unlockedAch.find(u=>u.id===a.id)).slice(0,4)
+  const { unlockedAch, lockedAch } = useMemo(() => {
+    const stats: UserStats = {
+      currentStreak: streak?.current ?? 0,
+      winRatePct:    winRateWeek ?? 0,
+      avgEnergy:     avgEnergy ?? 0,
+      totalWins:     wins,
+      longestStreak: streak?.longest30 ?? 0,
+    }
+    const unlockedAch = getUnlockedAchievements(stats)
+    const lockedAch   = ALL_ACHIEVEMENTS.filter(a => !unlockedAch.find(u => u.id === a.id)).slice(0, 4)
+    return { unlockedAch, lockedAch }
+  }, [streak, winRateWeek, avgEnergy, wins])
 
-  const greeting = () => getGreeting(hour)
+  const greeting = getGreeting(hour)
 
   // userAge removed from profile card — kept in profile editor only
 
   // ── Render: Profile editor ──────────────────────────────────────────────────
-  // Pre-compute TDEE preview (avoids IIFE inside JSX which some bundlers reject)
-  const t = (profDraft.height_cm && profDraft.weight_kg && profDraft.birth_year)
-    ? calculateNutritionTargets(profDraft)
-    : null
+  // Memoized: only recomputes when nutrition-relevant fields change, not on every keystroke
+  const t = useMemo(() => {
+    if (!profDraft.height_cm || !profDraft.weight_kg || !profDraft.birth_year) return null
+    return calculateNutritionTargets(profDraft)
+  }, [profDraft.height_cm, profDraft.weight_kg, profDraft.birth_year, profDraft.exercise_days_per_week, profDraft.fitness_goal, profDraft.gender])
   const tdeePreview = t ? (
     <div className="prof-tdee-card">
       <div className="prof-tdee-title">📊 Your personalized daily targets</div>
@@ -619,7 +630,7 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
         </div>
       </div>
 
-      {profError && <div className="prof-error">{profError}</div>}
+      {profError && <div className="prof-error" role="alert">{profError}</div>}
 
       {/* TDEE preview — pre-computed above as tdeePreview */}
       {tdeePreview}
@@ -661,7 +672,7 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
         <div className="dash-profile-right">
           <div className="dash-greeting">
             <span className="dash-greeting-text">
-              {profile.name ? profile.name : greeting()}
+              {profile.name ? profile.name : greeting}
             </span>
             {!profile.name && (
               <span className="dash-name-hint" style={{ color: 'var(--accent)' }}>Tap to set name →</span>
@@ -682,76 +693,56 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
         </div>
       )}
 
-      {/* ── Morning Feed — first thing users see ── */}
-      <MorningFeed />
-
-      {/* ── Weekly Story — Sundays only ── */}
-      {weeklyStory && weeklyStory.score != null && (
-        <div className="dash-story-card" style={{
-          borderColor: weeklyStory.score >= 7 ? alpha('var(--win)', 20) : weeklyStory.score >= 5 ? alpha('var(--partial)', 20) : alpha('var(--miss)', 20)
-        }}>
-          <div className="dash-story-header" onClick={() => setStoryExpanded(p => !p)}>
-            <div className="dash-story-header-left">
-              <span className="dash-story-emoji">
-                {weeklyStory.score >= 7 ? '🔥' : weeklyStory.score >= 5 ? '⚡' : '🔄'}
-              </span>
-              <div>
-                <div className="dash-story-eyebrow">Weekly Story</div>
-                <div className="dash-story-headline">{weeklyStory.headline}</div>
+      {/* Today progress — primary focal point */}
+      <div className="dash-card" onClick={() => onTabChange(todaySteps.find(s=>!s.done)?.tab ?? 'daily')}>
+        <div className="dash-progress-hero">
+          <svg className="progress-ring" viewBox="0 0 100 100">
+            <circle className="progress-ring-bg" cx="50" cy="50" r="42" />
+            <circle
+              className="progress-ring-fill"
+              cx="50" cy="50" r="42"
+              style={{
+                strokeDasharray: `${2 * Math.PI * 42}`,
+                strokeDashoffset: `${2 * Math.PI * 42 * (1 - todayPct / 100)}`,
+                stroke: todayPct===100?'var(--win)':todayPct>=66?'var(--future)':'var(--work)',
+              }}
+            />
+          </svg>
+          <div className="progress-ring-label">
+            <span className="progress-ring-pct" style={{ color: todayPct===100?'var(--win)':'var(--accent)' }}>{todayPct}%</span>
+            <span className="progress-ring-sub">today</span>
+          </div>
+        </div>
+        <div className="dash-today-steps">
+          {todaySteps.map(s => (
+            <div
+              key={s.label}
+              className={`dash-today-step ${s.done?'done':''}`}
+              onClick={e => { e.stopPropagation(); onTabChange(s.tab) }}
+            >
+              <div className={`dash-today-check ${s.done?'done':''}`}>{s.done?'✓':''}</div>
+              <div className="dash-today-step-body">
+                <div className="dash-today-step-row">
+                  <span className="dash-today-step-icon">{s.icon}</span>
+                  <span className="dash-today-step-label">{s.label}</span>
+                </div>
+                <div className="dash-today-step-sub">{s.sub}</div>
               </div>
             </div>
-            <div className="dash-story-score" style={{
-              color: weeklyStory.score >= 7 ? 'var(--win)' : weeklyStory.score >= 5 ? 'var(--partial)' : 'var(--miss)'
-            }}>
-              <span className="dash-story-score-num">{weeklyStory.score}</span>
-              <span className="dash-story-score-denom">/10</span>
-            </div>
-          </div>
-
-          {storyExpanded && (
-            <div className="dash-story-body">
-              {/* Stats row */}
-              {weeklyStory.stats && (
-                <div className="dash-story-stats">
-                  {[
-                    { label: 'Win rate',   val: weeklyStory.stats.win_rate,   color: 'var(--win)'     },
-                    { label: 'Energy',     val: weeklyStory.stats.avg_energy, color: 'var(--work)'    },
-                    { label: 'Focus',      val: weeklyStory.stats.avg_focus,  color: 'var(--future)'  },
-                    { label: 'Mood',       val: weeklyStory.stats.avg_mood,   color: 'var(--body)'    },
-                  ].map(s => (
-                    <div key={s.label} className="dash-story-stat">
-                      <div className="dash-story-stat-val" style={{ color: s.color }}>{s.val}</div>
-                      <div className="dash-story-stat-label">{s.label}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <p className="dash-story-text">{weeklyStory.story}</p>
-
-              {weeklyStory.pattern && (
-                <div className="dash-story-pattern">
-                  <span>🔍</span>
-                  <span><strong>Pattern: </strong>{weeklyStory.pattern}</span>
-                </div>
-              )}
-
-              {weeklyStory.next_week && (
-                <div className="dash-story-next">
-                  <span>🎯</span>
-                  <span><strong>Next week: </strong>{weeklyStory.next_week}</span>
-                </div>
-              )}
-            </div>
-          )}
+          ))}
         </div>
-      )}
+        {todayPct < 100 && (
+          <div className="dash-card-cta">
+            Next → {todaySteps.find(s=>!s.done)?.label}
+          </div>
+        )}
+      </div>
 
-      {/* ── Loss aversion banner */}
+      {/* Loss aversion banner — only when streak is at risk */}
       {lossMsg && (
         <div
           className={`dash-loss-banner ${lossMsg.urgent ? 'dash-loss-urgent' : ''}`}
-          style={{ borderColor: lossMsg.urgent ? 'oklch(62% 0.20 25 / 0.4)' : 'oklch(76% 0.14 60 / 0.3)' }}
+          style={{ borderColor: lossMsg.urgent ? alpha('var(--miss)', 40) : alpha('var(--partial)', 30) }}
           onClick={() => onTabChange('night')}
         >
           <div className="dash-loss-left">
@@ -765,7 +756,7 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
         </div>
       )}
 
-      {/* Streak row — 3 cards, wraps on very small screens */}
+      {/* Streak row */}
       <div className="dash-streak-row">
 
         {/* WIN streak */}
@@ -817,11 +808,67 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
         </div>
       )}
 
-      {/* ── Morning Challenge — compact by default ── */}
+      {/* ── Weekly Story — Sundays only ── */}
+      {weeklyStory && weeklyStory.score != null && (
+        <div className="dash-story-card" style={{
+          borderColor: weeklyStory.score >= 7 ? alpha('var(--win)', 20) : weeklyStory.score >= 5 ? alpha('var(--partial)', 20) : alpha('var(--miss)', 20)
+        }}>
+          <div className="dash-story-header" onClick={() => setStoryExpanded(p => !p)}>
+            <div className="dash-story-header-left">
+              <span className="dash-story-emoji">
+                {weeklyStory.score >= 7 ? '🔥' : weeklyStory.score >= 5 ? '⚡' : '🔄'}
+              </span>
+              <div>
+                <div className="dash-story-eyebrow">Weekly Story</div>
+                <div className="dash-story-headline">{weeklyStory.headline}</div>
+              </div>
+            </div>
+            <div className="dash-story-score" style={{
+              color: weeklyStory.score >= 7 ? 'var(--win)' : weeklyStory.score >= 5 ? 'var(--partial)' : 'var(--miss)'
+            }}>
+              <span className="dash-story-score-num">{weeklyStory.score}</span>
+              <span className="dash-story-score-denom">/10</span>
+            </div>
+          </div>
+
+          {storyExpanded && (
+            <div className="dash-story-body">
+              {weeklyStory.stats && (
+                <div className="dash-story-stats">
+                  {[
+                    { label: 'Win rate',   val: weeklyStory.stats.win_rate,   color: 'var(--win)'     },
+                    { label: 'Energy',     val: weeklyStory.stats.avg_energy, color: 'var(--work)'    },
+                    { label: 'Focus',      val: weeklyStory.stats.avg_focus,  color: 'var(--future)'  },
+                    { label: 'Mood',       val: weeklyStory.stats.avg_mood,   color: 'var(--body)'    },
+                  ].map(s => (
+                    <div key={s.label} className="dash-story-stat">
+                      <div className="dash-story-stat-val" style={{ color: s.color }}>{s.val}</div>
+                      <div className="dash-story-stat-label">{s.label}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <p className="dash-story-text">{weeklyStory.story}</p>
+              {weeklyStory.pattern && (
+                <div className="dash-story-pattern">
+                  <span>🔍</span>
+                  <span><strong>Pattern: </strong>{weeklyStory.pattern}</span>
+                </div>
+              )}
+              {weeklyStory.next_week && (
+                <div className="dash-story-next">
+                  <span>🎯</span>
+                  <span><strong>Next week: </strong>{weeklyStory.next_week}</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Morning Challenge — compact by default */}
       {challenge && !challengeDone && (
         <div className="dash-challenge-card" onClick={() => setChallengeExpanded(p => !p)}>
-
-          {/* Always visible: icon + category + expand arrow */}
           <div className="dash-challenge-header">
             <div className="dash-challenge-icon-wrap">
               <span className="dash-challenge-icon">{challenge.icon || '🎯'}</span>
@@ -840,8 +887,6 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
               {challengeExpanded ? '▲' : '▼'}
             </span>
           </div>
-
-          {/* Expanded: full challenge + science */}
           {challengeExpanded && (
             <div onClick={e => e.stopPropagation()}>
               <div className="dash-challenge-body">
@@ -879,122 +924,10 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
         </div>
       )}
 
-      {/* Today progress */}
-      <div className="dash-card" onClick={() => onTabChange(todaySteps.find(s=>!s.done)?.tab ?? 'daily')}>
-        <div className="dash-progress-hero">
-          <svg className="progress-ring" viewBox="0 0 100 100">
-            <circle className="progress-ring-bg" cx="50" cy="50" r="42" />
-            <circle
-              className="progress-ring-fill"
-              cx="50" cy="50" r="42"
-              style={{
-                strokeDasharray: `${2 * Math.PI * 42}`,
-                strokeDashoffset: `${2 * Math.PI * 42 * (1 - todayPct / 100)}`,
-                stroke: todayPct===100?'var(--win)':todayPct>=66?'var(--future)':'var(--work)',
-              }}
-            />
-          </svg>
-          <div className="progress-ring-label">
-            <span className="progress-ring-pct" style={{ color: todayPct===100?'var(--win)':'var(--accent)' }}>{todayPct}%</span>
-            <span className="progress-ring-sub">today</span>
-          </div>
-        </div>
-        <div className="dash-today-steps">
-          {todaySteps.map(s => (
-            <div
-              key={s.label}
-              className={`dash-today-step ${s.done?'done':''}`}
-              onClick={e => { e.stopPropagation(); onTabChange(s.tab as any) }}
-            >
-              <div className={`dash-today-check ${s.done?'done':''}`}>{s.done?'✓':''}</div>
-              <div className="dash-today-step-body">
-                <div className="dash-today-step-row">
-                  <span className="dash-today-step-icon">{s.icon}</span>
-                  <span className="dash-today-step-label">{s.label}</span>
-                </div>
-                <div className="dash-today-step-sub">{s.sub}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-        {todayPct < 100 && (
-          <div className="dash-card-cta">
-            Next → {todaySteps.find(s=>!s.done)?.label}
-          </div>
-        )}
-      </div>
+      {/* DECODE Briefing — inspirational content after action items */}
+      <MorningFeed />
 
-      {/* ── Habit Streaks — individual task streaks with mini rings ── */}
-      {weekData.length > 0 && (() => {
-        const habitStreaks = (['work', 'future', 'body'] as const).map(key => {
-          let streak = 0
-          // Walk backwards from the latest day with data
-          const sorted = [...weekData].sort((a, b) => b.log_date.localeCompare(a.log_date))
-          for (const row of sorted) {
-            if (row[`${key}_done` as keyof LogRow]) streak++
-            else break
-          }
-          return { key, streak, max: 7 }
-        })
-        const labels = { work: 'Work', future: 'Future', body: 'Body' }
-        const colors = { work: 'var(--work)', future: 'var(--future)', body: 'var(--body)' }
-        const icons  = { work: '💼', future: '🚀', body: '💪' }
-        const r = 20, circumference = 2 * Math.PI * r
-
-        return (
-          <div className="dash-card habit-streaks-card">
-            <div className="dash-card-header">
-              <span className="dash-card-title">Habit Streaks</span>
-              <span style={{ fontSize: '9px', color: 'var(--muted)' }}>this week</span>
-            </div>
-            <div className="habit-streaks-row">
-              {habitStreaks.map(h => {
-                const pct = Math.min(h.streak / h.max, 1)
-                return (
-                  <div key={h.key} className="habit-streak-item">
-                    <div className="habit-streak-ring">
-                      <svg viewBox="0 0 48 48" width="52" height="52">
-                        <circle cx="24" cy="24" r={r} fill="none" stroke="var(--border2)" strokeWidth="4" />
-                        <circle
-                          cx="24" cy="24" r={r} fill="none"
-                          stroke={colors[h.key]}
-                          strokeWidth="4" strokeLinecap="round"
-                          strokeDasharray={`${circumference}`}
-                          strokeDashoffset={`${circumference * (1 - pct)}`}
-                          style={{ transition: 'stroke-dashoffset 0.6s var(--ease-out-quint)' }}
-                        />
-                      </svg>
-                      <div className="habit-streak-ring-label" style={{ color: colors[h.key] }}>
-                        {icons[h.key]}
-                      </div>
-                    </div>
-                    <div className="habit-streak-name">{labels[h.key]}</div>
-                    <div className="habit-streak-sub" style={{ color: colors[h.key] }}>{h.streak}/{h.max} days</div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )
-      })()}
-
-      {/* Week stats */}
-      <div className="dash-stats-row">
-        {[
-          { icon:'🏆', label:'Win rate', val: winRateWeek!=null?`${winRateWeek}%`:'—', color: winRateWeek!=null?(winRateWeek>=70?'var(--win)':winRateWeek>=40?'var(--future)':'var(--miss)'):'var(--muted2)' },
-          { icon:'⚡', label:'Energy',   val: avgEnergy!=null?`${avgEnergy}`:'—', color:'var(--work)'   },
-          { icon:'🎯', label:'Focus',    val: avgFocus !=null?`${avgFocus}` :'—', color:'var(--future)' },
-          { icon:'😊', label:'Mood',     val: avgMood  !=null?`${avgMood}`  :'—', color:'var(--body)'   },
-        ].map(s => (
-          <div key={s.label} className="dash-stat-box" onClick={() => onTabChange('trends')}>
-            <div className="dash-stat-icon">{s.icon}</div>
-            <div className="dash-stat-val" style={{ color: s.color }}>{loading?'—':s.val}</div>
-            <div className="dash-stat-label">{s.label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Mini week */}
+      {/* This week — mini calendar + stats in one card */}
       <div className="dash-card">
         <div className="dash-card-header">
           <span className="dash-card-title">This week</span>
@@ -1011,7 +944,7 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
               <div key={date} className={`dash-mini-day ${isToday?'today':''} ${isFuture?'future':''}`}>
                 <div className="dash-mini-name">{dayName}</div>
                 <div className="dash-mini-dot" style={{
-                  background: out==='win'?'var(--win)':out==='partial'?'var(--partial)':out==='miss'?'var(--miss)':isToday?'oklch(74% 0.18 280 / 0.3)':isFuture?'var(--border)':'var(--border2)',
+                  background: out==='win'?'var(--win)':out==='partial'?'var(--partial)':out==='miss'?'var(--miss)':isToday?'oklch(58% 0.12 185 / 0.3)':isFuture?'var(--border)':'var(--border2)',
                   boxShadow: out==='win'?'0 0 6px var(--win)':undefined,
                 }} />
                 <div className="dash-mini-out" style={{ color: out==='win'?'var(--win)':out==='partial'?'var(--partial)':out==='miss'?'var(--miss)':'transparent' }}>
@@ -1020,6 +953,20 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
               </div>
             )
           })}
+        </div>
+        <div className="dash-stats-row dash-stats-row-incard">
+          {[
+            { icon:'🏆', label:'Win rate', val: winRateWeek!=null?`${winRateWeek}%`:'—', color: winRateWeek!=null?(winRateWeek>=70?'var(--win)':winRateWeek>=40?'var(--future)':'var(--miss)'):'var(--muted2)' },
+            { icon:'⚡', label:'Energy',   val: avgEnergy!=null?`${avgEnergy}`:'—', color:'var(--work)'   },
+            { icon:'🎯', label:'Focus',    val: avgFocus !=null?`${avgFocus}` :'—', color:'var(--future)' },
+            { icon:'😊', label:'Mood',     val: avgMood  !=null?`${avgMood}`  :'—', color:'var(--body)'   },
+          ].map(s => (
+            <div key={s.label} className="dash-stat-box" onClick={e => { e.stopPropagation(); onTabChange('trends') }}>
+              <div className="dash-stat-icon">{s.icon}</div>
+              <div className="dash-stat-val" style={{ color: s.color }}>{loading?'—':s.val}</div>
+              <div className="dash-stat-label">{s.label}</div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -1048,66 +995,6 @@ export default function Dashboard({ onTabChange, onNewAchievement }: Props) {
             </div>
           )
         }
-      </div>
-
-      {/* ── Secondary features grid ── */}
-      <div className="dash-section-label">More features</div>
-      <div className="dash-feature-grid">
-
-        <button className="dash-feature-card" onClick={() => onTabChange('decode')}>
-          <div className="dash-feature-icon">🔬</div>
-          <div className="dash-feature-body">
-            <div className="dash-feature-name">Decode</div>
-            <div className="dash-feature-hint">Your self-portrait in data</div>
-          </div>
-        </button>
-
-        <button className="dash-feature-card" onClick={() => onTabChange('week')}>
-          <div className="dash-feature-icon">📅</div>
-          <div className="dash-feature-body">
-            <div className="dash-feature-name">Week</div>
-            <div className="dash-feature-hint">
-              {streak?.current ? `🔥 ${streak.current}-day streak` : 'View your 7-day grid'}
-            </div>
-          </div>
-        </button>
-
-        <button className="dash-feature-card" onClick={() => onTabChange('anchors')}>
-          <div className="dash-feature-icon">🧭</div>
-          <div className="dash-feature-body">
-            <div className="dash-feature-name">Anchors</div>
-            <div className="dash-feature-hint">
-              {anchorsSet ? '✓ Set this week' : 'Not set yet'}
-            </div>
-          </div>
-        </button>
-
-        <button className="dash-feature-card" onClick={() => onTabChange('trends')}>
-          <div className="dash-feature-icon">📈</div>
-          <div className="dash-feature-body">
-            <div className="dash-feature-name">Trends</div>
-            <div className="dash-feature-hint">
-              {avgEnergy ? `Energy avg ${avgEnergy}` : '30-day patterns'}
-            </div>
-          </div>
-        </button>
-
-        <button className="dash-feature-card" onClick={() => onTabChange('coach')}>
-          <div className="dash-feature-icon">🤖</div>
-          <div className="dash-feature-body">
-            <div className="dash-feature-name">Coach</div>
-            <div className="dash-feature-hint">AI coaching report</div>
-          </div>
-        </button>
-
-        <button className="dash-feature-card" onClick={() => onTabChange('help')}>
-          <div className="dash-feature-icon">❓</div>
-          <div className="dash-feature-body">
-            <div className="dash-feature-name">Help</div>
-            <div className="dash-feature-hint">Manual & tips</div>
-          </div>
-        </button>
-
       </div>
 
     </div>
