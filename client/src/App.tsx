@@ -42,13 +42,17 @@ const TABS_PRIMARY = [
   { id: 'decode'    as AppTab, icon: '🔬', label: 'Decode'  },
 ]
 
-// Secondary tabs — accessible via "More" menu
-const TABS_MORE = [
-  { id: 'nutrition' as AppTab, icon: '🥗', label: 'Food'     },
-  { id: 'coffee'    as AppTab, icon: '☕', label: 'Coffee'   },
-  { id: 'week'      as AppTab, icon: '📅', label: 'Week'     },
+// Featured secondary tabs — always visible above primary bar
+const TABS_FEATURED = [
   { id: 'trends'    as AppTab, icon: '📊', label: 'Trends'   },
   { id: 'coach'     as AppTab, icon: '🤖', label: 'Coach'    },
+  { id: 'nutrition' as AppTab, icon: '🥗', label: 'Food'     },
+  { id: 'coffee'    as AppTab, icon: '☕', label: 'Coffee'   },
+]
+
+// Remaining secondary tabs — accessible via "More" menu
+const TABS_MORE = [
+  { id: 'week'      as AppTab, icon: '📅', label: 'Week'     },
   { id: 'anchors'   as AppTab, icon: '🧭', label: 'Anchors'  },
   { id: 'help'      as AppTab, icon: '❓', label: 'Help'     },
 ]
@@ -483,6 +487,23 @@ function AppInner() {
           </div>
         </>
       )}
+
+      {/* ── Featured secondary tabs ── */}
+      <nav className="secondary-tab-bar" role="navigation" aria-label="Secondary navigation">
+        <div className="secondary-tab-scroll">
+          {TABS_FEATURED.map(t => (
+            <button
+              key={t.id}
+              className={`secondary-tab-btn ${tab === t.id ? 'secondary-tab-active' : ''}`}
+              onClick={() => { handleTabChange(t.id); setShowMore(false) }}
+              aria-label={t.label}
+            >
+              <span className="secondary-tab-icon">{t.icon}</span>
+              <span className="secondary-tab-label">{t.label}</span>
+            </button>
+          ))}
+        </div>
+      </nav>
 
       {/* ── Primary bottom tab bar ── */}
       <nav className="bottom-tab-bar" role="navigation" aria-label="Main navigation">
