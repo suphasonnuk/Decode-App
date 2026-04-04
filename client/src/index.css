@@ -10,6 +10,7 @@
   --text:     oklch(25% 0.020 50);
   --muted:    oklch(48% 0.018 55);
   --muted2:   oklch(35% 0.020 50);
+  --placeholder: oklch(40% 0.019 52);  /* Darker than muted for better visibility */
 
   /* ── Semantic colors — clinical clarity with purpose ── */
   --work:     oklch(58% 0.12 230);   /* calm blue — professional, focused */
@@ -537,7 +538,7 @@ body::before {
   background: oklch(96% 0.003 80);
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 8%, transparent);
 }
-.anchor-textarea::placeholder { color: var(--muted); }
+.anchor-textarea::placeholder { color: var(--placeholder); }
 
 /* ── Task cards ── */
 .task-cards { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
@@ -743,7 +744,7 @@ body::before {
   background: oklch(96% 0.003 80);
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 8%, transparent);
 }
-.field-textarea::placeholder { color: var(--muted); }
+.field-textarea::placeholder { color: var(--placeholder); }
 .field-textarea-error { border-color: var(--miss) !important; }
 .optional-badge {
   font-size: var(--text-2xs);
@@ -1394,7 +1395,7 @@ body::before {
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 10%, transparent);
 }
 .auth-input.invalid { border-color: var(--miss); box-shadow: 0 0 0 3px oklch(62% 0.20 25 / 0.1); }
-.auth-input::placeholder { color: var(--muted); letter-spacing: 0; }
+.auth-input::placeholder { color: var(--placeholder); letter-spacing: 0; }
 .auth-error {
   font-size: var(--text-sm); color: var(--miss);
   margin-bottom: var(--sp-3);
@@ -2234,7 +2235,7 @@ select option { background: oklch(97% 0.003 80); }
   border-color: var(--accent);
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 10%, transparent);
 }
-.prof-input::placeholder { color: var(--muted); }
+.prof-input::placeholder { color: var(--placeholder); }
 .prof-select {
   width: 100%; background: var(--bg); border: 1px solid var(--border2);
   border-radius: var(--radius-sm); padding: 10px 12px;
@@ -2669,7 +2670,7 @@ select option { background: oklch(97% 0.003 80); }
   transition: border-color 0.15s;
 }
 .task-custom-input:focus { outline: none; border-color: var(--accent); }
-.task-custom-input::placeholder { color: var(--muted); }
+.task-custom-input::placeholder { color: var(--placeholder); }
 
 /* ════════════════════════════════════════════
    WEEKLY REVIEW SHEET
