@@ -99,7 +99,7 @@ function Heatmap({ points }: { points: TrendPoint[] }) {
   const metricKey = metric === 'energy' ? 'energy_level' : metric === 'focus' ? 'focus_level' : 'mood_level'
 
   // Recompute the 90-day grid only when points or metric changes
-  const { days, weeks } = useMemo(() => {
+  const { weeks } = useMemo(() => {
     const dataMap: Record<string, number | null> = {}
     for (const p of points) {
       dataMap[p.log_date] = p[metricKey]
@@ -119,7 +119,7 @@ function Heatmap({ points }: { points: TrendPoint[] }) {
       currentWeek.push(day)
     }
     if (currentWeek.length > 0) weeks.push(currentWeek)
-    return { days, weeks }
+    return { weeks }
   }, [points, metricKey])
 
   const cellSize = 14
@@ -209,7 +209,7 @@ export default function Trends() {
     </div>
   )
 
-  const { energy, focus, mood, avgEnergy, avgFocus, avgMood, daysLogged, winCount, winRate, weekBars, charts } = useMemo(() => {
+  const { daysLogged, winCount, winRate, weekBars, charts } = useMemo(() => {
     const energy  = points.map(p => p.energy_level)
     const focus   = points.map(p => p.focus_level)
     const mood    = points.map(p => p.mood_level)
@@ -234,7 +234,7 @@ export default function Trends() {
       { label: 'Focus',  icon: '🎯', data: focus,  color: 'var(--future)', val: avgFocus  },
       { label: 'Mood',   icon: '😊', data: mood,   color: 'var(--body)',   val: avgMood   },
     ]
-    return { energy, focus, mood, avgEnergy, avgFocus, avgMood, daysLogged, winCount, winRate, weekBars, charts }
+    return { daysLogged, winCount, winRate, weekBars, charts }
   }, [points])
 
   return (
