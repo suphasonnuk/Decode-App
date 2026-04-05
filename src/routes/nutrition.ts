@@ -7,6 +7,39 @@ import { BigQuery } from '@google-cloud/bigquery'
 
 const router = Router()
 
+// ── Server-side analysis dedup cache ─────────────────────────────────────────
+// Prevents duplicate API calls for the same dish name or image within a TTL window.
+// Dish names: 60-min TTL (standardised dishes don't change). Images: 10-min TTL (session dedup).
+const _analysisCache = new Map<string, { result: any; expires: number }>()
+
+function _cacheKey(body: { image_base64?: string; dish_name?: string }): string {
+  if (body.dish_name) return 'text:' + body.dish_name.toLowerCase().replace(/\s+/g, ' ').trim().slice(0, 80)
+  if (body.image_base64) {
+    const b = body.image_base64
+    // Fingerprint: length + first 200 + last 100 chars — fast, sufficient for dedup
+    return 'img:' + b.length + ':' + b.slice(0, 200) + b.slice(-100)
+  }
+  return ''
+}
+
+function _getCachedAnalysis(key: string): any | null {
+  if (!key) return null
+  const entry = _analysisCache.get(key)
+  if (!entry) return null
+  if (Date.now() > entry.expires) { _analysisCache.delete(key); return null }
+  return entry.result
+}
+
+function _setCachedAnalysis(key: string, result: any, ttlMs: number) {
+  if (!key) return
+  _analysisCache.set(key, { result, expires: Date.now() + ttlMs })
+  // Evict expired entries when cache grows large (prevents memory leak)
+  if (_analysisCache.size > 200) {
+    const now = Date.now()
+    for (const [k, v] of _analysisCache) if (now > v.expires) _analysisCache.delete(k)
+  }
+}
+
 // ── Shared AI call helper ─────────────────────────────────────────────────
 async function callAI(
   apiKey: string, system: string, messages: any[], label: string,
@@ -107,6 +140,12 @@ const PORTION_TABLE =
   '  Thai milk tea medium:      350ml | full sugar ~280kcal | half sugar ~160kcal\n' +
   '  Non-Thai: use USDA SR / NHS standard portion references.'
 
+// Condensed Thai context for the verifier — key numbers only, no narrative prose
+const THAI_CONTEXT_BRIEF =
+  'THAI PORTIONS (Bangkok): Single Thai meal 400-600kcal typical; flag if >700kcal. ' +
+  'Protein per serve: 60-100g meat (NOT 120-180g Western portions). Rice base ~150g = 195kcal. ' +
+  'Shared dish: estimate 1/3-1/4 of visible quantity per person.'
+
 const FEW_SHOT_EXAMPLES =
   'CALIBRATION EXAMPLES (verified reference values — use these to calibrate your scale):\n\n' +
   'Example 1 — Khao pad gai (chicken fried rice, Thai restaurant single plate):\n' +
@@ -132,7 +171,7 @@ router.post('/nutrition/analyze', rateLimit(20, 60_000), async (req: Request, re
     const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY
     if (!ANTHROPIC_KEY) return res.status(503).json({ error: 'ANTHROPIC_API_KEY not set' })
 
-    const { image_base64, image_media_type, dish_name } = req.body
+    const { image_base64, image_media_type, dish_name, user_targets } = req.body
     if (!image_base64 && !dish_name) return res.status(400).json({ error: 'Provide either image_base64 or dish_name' })
 
     if (image_base64 && typeof image_base64 === 'string' && image_base64.length > 10_000_000) {
@@ -142,6 +181,14 @@ router.post('/nutrition/analyze', rateLimit(20, 60_000), async (req: Request, re
     const VALID_MEDIA = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
     if (image_base64 && image_media_type && !VALID_MEDIA.includes(image_media_type)) {
       return res.status(400).json({ error: 'Invalid image type — use JPEG, PNG, or WebP' })
+    }
+
+    // Check dedup cache before calling AI (same dish name or image in the last 10-60 min)
+    const analysisCacheKey = _cacheKey({ image_base64, dish_name })
+    const cachedAnalysis   = _getCachedAnalysis(analysisCacheKey)
+    if (cachedAnalysis) {
+      console.log('[nutrition/analyze] Dedup cache hit:', analysisCacheKey.slice(0, 50))
+      return res.json({ ...cachedAnalysis, from_cache: true })
     }
 
     // ── PASS 1: Estimator ─────────────────────────────────────────────────
@@ -215,30 +262,22 @@ router.post('/nutrition/analyze', rateLimit(20, 60_000), async (req: Request, re
     // ── PASS 2: Verifier system prompt ────────────────────────────────────
 
     const verifierSystem =
-      'You are a senior clinical nutritionist acting as a peer reviewer. ' +
-      'Another nutritionist has estimated the nutrition for a dish. ' +
-      'Your job is to independently verify or correct their estimate.\n\n' +
-      THAI_EATING_CONTEXT + '\n\n' +
+      'You are a senior clinical nutritionist peer-reviewing a nutrition estimate. ' +
+      'Your role is to CHECK the estimate — not re-estimate from scratch.\n\n' +
+      THAI_CONTEXT_BRIEF + '\n\n' +
       PORTION_TABLE + '\n\n' +
       PROTEIN_DENSITY_TABLE + '\n\n' +
       ATWATER_FACTORS + '\n\n' +
-      FEW_SHOT_EXAMPLES + '\n\n' +
-      'CRITICAL RULES:\n' +
-      '1. Make your OWN independent estimate first — do not just confirm the first estimate\n' +
-      '2. Check if the macro math is correct: calories must = (P×4)+(C×4)+(F×9)\n' +
-      '3. Check if the portion size is realistic for THAI Bangkok context:\n' +
-      '   - Single Thai meal total: 400-600kcal is typical. Above 700kcal needs justification.\n' +
-      '   - Protein source per single serve: 60-100g is Thai standard. Flag if estimator used >120g.\n' +
-      '4. PROTEIN IS THE MOST COMMONLY OVERESTIMATED MACRO. Verify protein using the density table:\n' +
-      '   (protein source weight g) × (density g/100g) / 100 = expected protein_g\n' +
-      '   If estimated protein exceeds this by >20%, flag it and reduce.\n' +
-      '5. Common protein overestimation patterns to catch:\n' +
-      '   - Assigning >25g protein to a dish with only 80-100g of mixed/fatty meat\n' +
-      '   - Assigning protein to rice, noodles, or sauces above 3g/100g\n' +
-      '   - Using chicken breast density (31g/100g) for mixed/fatty cuts or ground meat\n' +
-      '6. If you agree on calories but disagree on protein distribution, still provide corrected macros\n' +
-      '7. If you agree (within 10% calories AND protein within 15%), confirm the estimate\n\n' +
-      'OUTPUT: Respond with ONLY valid JSON — no preamble:\n' +
+      'VERIFICATION CHECKLIST:\n' +
+      '1. MACRO MATH: calories must = (P×4)+(C×4)+(F×9). Correct macros if off by >5%.\n' +
+      '2. PROTEIN REALITY: weight(g) × density(g/100g)/100 = expected protein_g.\n' +
+      '   Reduce if estimate exceeds expected by >20%.\n' +
+      '   Common errors: >25g protein from 80-100g mixed/fatty meat; ' +
+      'chicken breast density (31g/100g) applied to ground or fatty cuts; protein assigned to rice/sauces.\n' +
+      '3. PORTION REALISM: check total against PORTION_TABLE and Thai context. Flag/correct if outside range.\n\n' +
+      'agrees=true if calories within 10% AND protein within 15% of your verified values.\n' +
+      'Always output verified_* values — copy estimate values if you agree, correct if you do not.\n\n' +
+      'OUTPUT: Valid JSON only — no preamble:\n' +
       JSON.stringify({
         agrees: true,
         verified_calories: 0,
@@ -249,7 +288,7 @@ router.post('/nutrition/analyze', rateLimit(20, 60_000), async (req: Request, re
         verified_sugar_g: 0,
         verified_sodium_mg: 0,
         verified_estimated_weight_g: 0,
-        disagreement_reason: 'null or explanation if disagrees',
+        disagreement_reason: 'null or brief explanation',
         confidence: 'high',
       }, null, 2)
 
@@ -333,6 +372,10 @@ router.post('/nutrition/analyze', rateLimit(20, 60_000), async (req: Request, re
       '\nrating guide: positive=mostly beneficial nutrients | neutral=balanced, ok in moderation | ' +
       'mixed=some benefits and some concerns | negative=high in nutrients to limit (sugar/sat fat/sodium)'
 
+    const targetsLine = (user_targets?.calories && user_targets?.protein_g)
+      ? '\nUser daily targets: ' + user_targets.calories + 'kcal, ' + user_targets.protein_g + 'g protein — contextualize health impact against these.'
+      : ''
+
     const haikuInput =
       'Dish: ' + (finalNutrition.dish_name || 'Unknown dish') + '\n' +
       'Serving: ' + (finalNutrition.serving_description || '') + '\n' +
@@ -343,7 +386,8 @@ router.post('/nutrition/analyze', rateLimit(20, 60_000), async (req: Request, re
       '  Fat: ' + finalNutrition.fat_g + 'g\n' +
       '  Fiber: ' + finalNutrition.fiber_g + 'g\n' +
       '  Sugar: ' + finalNutrition.sugar_g + 'g\n' +
-      '  Sodium: ' + finalNutrition.sodium_mg + 'mg\n\n' +
+      '  Sodium: ' + finalNutrition.sodium_mg + 'mg' +
+      targetsLine + '\n\n' +
       'Write a brief health impact summary for this dish.'
 
     let healthImpact: any = null
@@ -359,12 +403,15 @@ router.post('/nutrition/analyze', rateLimit(20, 60_000), async (req: Request, re
       console.warn('[nutrition/analyze] Haiku health impact failed:', (err as Error).message)
     }
 
-    return res.json({
+    const analysisResult = {
       success: true,
       nutrition: { ...finalNutrition, health_impact: healthImpact },
-      source: image_base64 ? 'ai_image' : 'ai_text',
+      source:   image_base64 ? 'ai_image' : 'ai_text',
       verified: true,
-    })
+    }
+    // Cache: 60min for dish names (same dish = same result), 10min for images (session dedup)
+    _setCachedAnalysis(analysisCacheKey, analysisResult, image_base64 ? 10 * 60_000 : 60 * 60_000)
+    return res.json(analysisResult)
   } catch (err) {
     const msg = err instanceof Error && err.name === 'AbortError' ? 'Analysis timed out — try again' : safeErr(err, 'nutrition.analyze')
     return res.status(500).json({ error: msg })

@@ -358,7 +358,10 @@ export default function Nutrition({ onToast, onTabChange }: Props) {
 
       try {
         const { base64, mediaType } = await resizeImage(dataUrl)
-        const res = await api.analyzeNutrition({ image_base64: base64, image_media_type: mediaType })
+        const res = await api.analyzeNutrition({
+          image_base64: base64, image_media_type: mediaType,
+          user_targets: { calories: TARGETS.calories, protein_g: TARGETS.protein_g },
+        })
         if (res.success) {
           setAnalyzeResult(res.nutrition)
           setAnalyzeSource('ai_image')
@@ -389,7 +392,10 @@ export default function Nutrition({ onToast, onTabChange }: Props) {
     setAnalyzing(true)
     setImagePreview(null) // FIX: clear any stale image preview from previous scan
     try {
-      const res = await api.analyzeNutrition({ dish_name: dishInput.trim() })
+      const res = await api.analyzeNutrition({
+        dish_name: dishInput.trim(),
+        user_targets: { calories: TARGETS.calories, protein_g: TARGETS.protein_g },
+      })
       if (res.success) {
         setAnalyzeResult(res.nutrition)
         setAnalyzeSource('ai_text')

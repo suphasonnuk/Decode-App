@@ -76,11 +76,17 @@ export const api = {
     }),
 
   // Nutrition tracker
-  analyzeNutrition: (payload: { image_base64?: string; image_media_type?: string; dish_name?: string }) =>
+  analyzeNutrition: (payload: {
+    image_base64?: string
+    image_media_type?: string
+    dish_name?: string
+    user_targets?: { calories: number; protein_g: number }
+  }) =>
     post<{
-      success:   boolean
-      nutrition: NutritionFacts
-      source:    string
+      success:    boolean
+      nutrition:  NutritionFacts
+      source:     string
+      from_cache?: boolean
     }>('/nutrition/analyze', payload),
 
   logNutrition: (entry: NutritionEntry) =>
