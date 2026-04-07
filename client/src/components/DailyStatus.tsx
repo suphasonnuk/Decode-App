@@ -47,7 +47,7 @@ export default function DailyStatus({ onTabChange, activeTab, streak }: Props) {
   if (todayDone) {
     icon = '✅'
     statusClass = 'daily-status-done'
-    targetTab = 'week'
+    targetTab = 'review'
     message = <><strong>Day complete</strong> — well done{(streak ?? 0) > 1 ? `, ${streak}-day streak` : ''}</>
     sub = 'View your week'
   } else if (!tasksSelected) {
@@ -76,7 +76,7 @@ export default function DailyStatus({ onTabChange, activeTab, streak }: Props) {
     message = <><strong>{tasksDoneCount}/3 tasks done</strong> — keep going</>
     sub = hour >= 18 ? 'Finish up and close the day' : 'Mark tasks as you finish them'
   } else if (!nightDone) {
-    targetTab = 'night'
+    targetTab = 'review'
     statusClass = 'daily-status-night'
     if (hour >= 22) {
       icon = '🚨'
