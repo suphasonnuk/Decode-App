@@ -291,14 +291,14 @@ const topics = [
     num: '01',
     title: 'The Elevator Pitch — Why Silence Is Your Opening Line',
     hook: '"Your elevator pitch is failing before you say a single word."',
-    surprisingFact: 'Columbia Business School (2019): speakers who paused just 3 seconds before speaking were rated 34% more confident — with absolutely identical content. Not a different script. Not a better voice. Just 3 seconds of silence. Perception completely transformed.',
+    surprisingFact: 'Amy Cuddy\'s decade of research at Harvard Business School documented something counterintuitive: your internal state — anxious vs calm — physically alters your voice before you say a word, changing pitch, onset timing, and breath support. This means the pause before speaking is not just psychological preparation. It is physiological. Research on speech anxiety consistently shows that rushed speech onset is a detectable signal of nervous system activation — and listeners read it before they process a single word of content.',
     oneLiner: 'Most people rush to speak the moment they have the floor. That rush is the mistake — because the 3 seconds before your first word communicate more than your first sentence.',
     concept: [
       'When most people prepare an elevator pitch, they obsess over words — the perfect sentence, the right order, the crisp ending. What almost nobody prepares is the moment before speaking: the transition from silence into voice.',
       'Research on vocal onset and perceived authority consistently shows that speakers who take a deliberate pause before beginning — 2 to 3 seconds of visible stillness — are rated significantly more confident, credible, and in control by listeners. This is not a trick. It is a signal. The pause communicates that you are not afraid of silence, which means you are not afraid of the room.',
     ],
     science: [
-      ['Columbia Business School (2019)', 'Speakers who paused before speaking were rated 34% more confident by listeners, with no other change in content or delivery.'],
+      ['Amy Cuddy — Presence, Harvard Business School (2015)', 'Internal psychological state (calm vs anxious) directly alters physiological signals including voice onset timing, vocal quality, and breath pattern — all readable by listeners within seconds. Documented across multiple studies at Harvard Business School.'],
       ['Amy Cuddy — Presence (2015)', 'Internal psychological state (calm vs. anxious) directly alters physiological signals including voice onset, posture, and breath — all readable by an audience within seconds.'],
       ['Speech anxiety research', 'Filler words and rushed starts are physiological symptoms of the fight-or-flight response: the body wants to "fill the gap" to reduce social threat exposure.'],
       ['TED Talk pattern analysis', 'Virtually all highly-rated TED speakers pause visibly before their first word. The audience interprets this pause as control of the space.'],
@@ -334,17 +334,17 @@ const topics = [
     num: '02',
     title: 'Dopamine Reward Prediction Error — You Are Addicted to the Moment Before',
     hook: '"You are not addicted to the reward. You are addicted to the moment right before it."',
-    surprisingFact: 'Scientists discovered this by accident. Rats bred with no ability to produce dopamine will starve to death even with food directly beside them — they can smell it but feel zero motivation to move toward it. If food is placed in their mouths, they eat normally. Dopamine is not the pleasure chemical. It is the motivation chemical. Without it, nothing is worth pursuing.',
+    surprisingFact: 'Kent Berridge and Terry Robinson at the University of Michigan discovered that dopamine-depleted rats stop seeking food even when it is placed directly in front of them — they show no motivation to move toward it. But when food is placed in their mouths, they display normal pleasure responses. Dopamine is not the pleasure chemical. It is the motivation chemical. Pleasure and motivation are two completely separate systems — and only one of them is dopamine.',
     oneLiner: 'Dopamine does not fire when good things happen. It fires when you predict they are about to happen. Understanding this changes how you see motivation, procrastination, social media, and your own drive.',
     concept: [
       'For most of modern history, we assumed dopamine was the "pleasure chemical" — that it fired when something good happened, as a reward signal. This turned out to be wrong.',
       'In the 1990s, neuroscientist Wolfram Schultz at Cambridge University discovered, by recording individual dopamine neurons in monkeys, that dopamine fires at the moment of prediction — not at the moment of reward. When a reward becomes fully expected, dopamine neurons stop firing for the reward and start firing for the cue that predicts it. This is called the Reward Prediction Error signal, and it rewired how we understand motivation entirely.',
     ],
     science: [
-      ['Wolfram Schultz (Cambridge, 1997)', 'Nobel Prize-recognized research. Dopamine neurons in primates fire maximally at unpredicted rewards and at cues that predict rewards — not at fully expected rewards.'],
-      ['Prediction Error Signal', 'If a reward arrives unexpectedly → large dopamine spike. If an expected reward arrives → no dopamine response. If an expected reward is absent → dopamine drops below baseline. The error between prediction and reality is what matters.'],
-      ['Human fMRI research', 'Ventral striatum (dopamine-rich) activates most strongly during anticipation phases in reward tasks — not during the reward itself. Confirmed across dozens of studies.'],
-      ['Social media engineering', 'Variable reward schedules (the scroll and refresh mechanism) are deliberately designed around this finding: unpredictable rewards create the strongest, most persistent dopamine anticipation loops.'],
+      ['Wolfram Schultz, Dayan & Montague — Science (1997)', 'Recording individual dopamine neurons in macaque monkeys, Schultz found that dopamine neurons fire in response to the gap between predicted and actual reward — not at the reward itself. Published as "A Neural Substrate of Prediction and Reward," Science vol. 275.'],
+      ['Prediction Error Signal (Schultz)', 'Unpredicted reward arrives → large dopamine spike. Expected reward arrives → no dopamine response. Expected reward absent → dopamine drops below baseline. The brain is running a continuous error-correction process, not a reward counter.'],
+      ['Berridge & Robinson — University of Michigan', 'A separate line of research confirmed the same principle: dopamine-depleted rats cease seeking food even when it is in front of them but display normal pleasure responses when food is placed in their mouths. Wanting and liking are two different brain systems. Dopamine drives wanting — not enjoyment.'],
+      ['Human neuroimaging', 'fMRI studies show the ventral striatum (dopamine-rich) activates most strongly during the anticipation phase of reward tasks — not at reward delivery. Replicated across dozens of independent studies.'],
     ],
     mechanism: [
       ['1', 'New reward', 'First time you experience something good, dopamine fires at the reward itself. Your brain is learning.'],
@@ -420,7 +420,7 @@ const topics = [
     num: '04',
     title: 'The Variable Reward Trap — Why You Check Your Phone Without Deciding To',
     hook: '"Your phone is not designed to be used. It is designed to be checked."',
-    surprisingFact: 'Loren Brichter, the engineer who invented pull-to-refresh — the gesture you use every day — has publicly said he regrets inventing it. "It\'s addictive," he said. "I regret the downsides." He confirmed it was modelled on the slot machine lever. He also admitted it took him years to stop compulsively using it himself.',
+    surprisingFact: 'Loren Brichter, the engineer who invented pull-to-refresh (originally for Tweetie, which became Twitter), has spoken publicly about his concerns with the feature he created — describing it as addictive and expressing regret about the consequences of designing it. Sean Parker, Facebook\'s founding president, was even more direct in 2017: "How do we consume as much of your time and conscious attention as possible?" — confirming that variable reward was the deliberate design intent.',
     oneLiner: 'B.F. Skinner discovered in the 1950s that unpredictable rewards produce the most persistent, compulsive behaviour. Every scroll is a lever pull. Understanding the schedule changes your relationship with the urge.',
     concept: [
       'In the 1950s, B.F. Skinner was experimenting with pigeons and lever-pressing when he discovered something that would later be used to design the most engaging products in human history. He found that the schedule on which a reward is delivered — not just the reward itself — determines how persistent the behaviour becomes.',
@@ -514,7 +514,7 @@ const topics = [
     science: [
       ['Fuschia Sirois (2014)', 'Procrastination is a "failure of self-regulation in the face of stress." The primary driver is not time mismanagement but mood regulation — avoiding negative feelings associated with a task.'],
       ['Timothy Pychyl — "Procrastination = Emotion-focused coping"', 'The procrastinator is not thinking "I will do this later." They are escaping a present negative feeling. The task becomes associated with that feeling, making future starting harder.'],
-      ['Amygdala size and procrastination', 'Research using MRI found that chronic procrastinators have larger amygdalas (the brain\'s threat-detection centre) and stronger connections between the amygdala and the dorsal anterior cingulate cortex (which translates threat signals into behavioural avoidance).'],
+      ['Procrastination and stress research (Sirois)', 'Procrastinators report significantly less stress and physical illness than non-procrastinators in the short term — as deadlines are distant. This reverses sharply as deadlines approach. The pattern confirms avoidance is a successful short-term mood regulation strategy with compounding long-term costs.'],
       ['Temporal discounting', 'The brain neurologically discounts future rewards: a reward 3 months away is felt as less valuable than one today. Future-task completion is thus neurologically "worth less" than the immediate relief of not starting — making avoidance feel rational to the brain in the moment.'],
     ],
     mechanism: [
@@ -548,7 +548,7 @@ const topics = [
     num: '07',
     title: 'The Mere Exposure Effect — Why Familiarity Builds Trust Before Quality Does',
     hook: '"You do not need to be brilliant. You need to be there."',
-    surprisingFact: 'Zajonc tested the exposure effect with stimuli shown at 1 millisecond — so fast that participants had zero conscious awareness of seeing anything at all. The effect still worked. People rated the subliminal stimuli more positively than novel ones. You can develop genuine preferences for things you have no memory of ever encountering.',
+    surprisingFact: 'Zajonc tested the exposure effect using a tachistoscope to show stimuli below the threshold of conscious awareness — so briefly that participants showed no recognition when directly tested. The effect still worked. People rated stimuli they had no conscious memory of seeing more positively than genuinely new ones. Preference formed without perception. You can genuinely like something you do not know you have encountered.',
     oneLiner: 'Robert Zajonc\'s 1968 discovery showed that repeated exposure to a stimulus — any stimulus — increases how positively people feel about it, completely independently of quality. Consistency is a neurological trust mechanism.',
     concept: [
       'In 1968, Robert Zajonc published a paper that would make advertisers, politicians, and eventually content creators very interested. He showed that simply exposing people to a stimulus — Chinese characters, Turkish words, photographs of strangers — made them rate it more favourably over time. No new information. No change in quality. Just repetition.',
@@ -592,13 +592,13 @@ const topics = [
     title: 'Body Language Speaks Before You — The Thin Slices of First Impressions',
     hook: '"The room has already made a decision about you before you open your mouth."',
     surprisingFact: 'Willis & Todorov (2006): at 100 milliseconds — one tenth of a second — people have already formed reliable trait judgments. Extending exposure to 500 milliseconds or even 1 full second does not change the judgment. It only increases confidence in it. Your first impression is finalised before your conscious mind has processed the stimulus.',
-    oneLiner: 'Nalini Ambady\'s research showed humans form accurate trait judgments from 6-second exposures to silent video. Your posture, gait, and arrival are your first sentence — and you have been neglecting to write them.',
+    oneLiner: 'Nalini Ambady\'s research showed humans form accurate trait judgments from exposures as brief as 2 seconds of silent video. Your posture, gait, and arrival are your first sentence — and you have been neglecting to write them.',
     concept: [
-      'In 1992, Harvard psychologists Nalini Ambady and Robert Rosenthal showed participants silent 30-second clips of teachers being recorded. Participants rated the teachers on traits like warmth, confidence, and competence. When Ambady compared these ratings to end-of-semester student evaluations — after months of actual teaching — the correlation was striking. Then she reduced the clip to 6 seconds. Same result.',
+      'In 1993, Nalini Ambady and Robert Rosenthal published a landmark study showing participants silent clips of teachers — 2 seconds, 5 seconds, and 10 seconds long. Participants rated the teachers on traits like warmth, confidence, and competence. When Ambady compared these ratings to end-of-semester student evaluations — after months of actual teaching — the correlation was striking. Most surprising: accuracy was not significantly different between the 2-second and 10-second clips. Two seconds of silent, non-verbal behaviour predicted a semester of student perception.',
       'This "thin slices" phenomenon reveals that human beings are extracting an enormous amount of social information from very brief, non-verbal exposures — information that stacks up against extended experience. The walk to the front of the room, the way you enter a meeting, the stance you take while waiting — these are all being read before your first word.',
     ],
     science: [
-      ['Ambady & Rosenthal (1992) — "Half a Minute"', 'Six seconds of silent video of teachers correlated significantly with end-of-semester student ratings. Non-verbal behaviour alone was a reliable predictor of relational competence.'],
+      ['Ambady & Rosenthal (1993) — Psychological Bulletin', 'Clips of 2, 5, and 10 seconds of silent teacher video all correlated significantly with end-of-semester student ratings — with no significant accuracy difference between durations. Published in Psychological Bulletin, vol. 111. Malcolm Gladwell drew heavily on this work in Blink (2005).'],
       ['Willis & Todorov (2006)', 'Participants formed reliable trait judgments from 100-millisecond exposures to faces. Extending exposure time changed confidence in the judgment but not the judgment itself. First impressions form at near-unconscious speed.'],
       ['Ambady on doctors and malpractice', 'Surgeons rated as dominant and uncaring based on tone of voice alone (with content filtered out) were significantly more likely to have been sued for malpractice. The how overpowers the what.'],
       ['Paul Ekman — Micro-expressions', 'Involuntary facial expressions lasting 1/5 to 1/25 of a second leak genuine emotional states even when a person is consciously suppressing expression. Trained observers and computers can read these.'],
@@ -617,7 +617,7 @@ const topics = [
     ],
     awareness: 'The self-awareness practice here is not about performing confidence you do not feel. It is about noticing the gap between your internal state and what your body is broadcasting. Many people are completely unaware of their posture, the speed of their walk, or where their eyes go when they enter a room. Developing awareness of these signals — not to fake them, but to understand them — is a form of self-knowledge with direct practical effects.',
     camera: [
-      'Open with: "Nalini Ambady showed people 6-second silent videos of teachers. Their ratings predicted end-of-semester student evaluations. Six seconds. No words."',
+      'Open with: "Nalini Ambady showed people silent 2-second clips of teachers they had never met. Their ratings predicted end-of-semester student evaluations. Two seconds. No sound. No words."',
       'Name the principle: "Thin slices — the idea that we extract enormous amounts of accurate social information from very small windows of non-verbal behaviour."',
       'The preparation blind spot: "You prepare what you will say. Almost nobody prepares the 10 seconds before they say anything. But those 10 seconds are being read in real time."',
       'The self-awareness flip: "Spend one week just noticing: what is your body doing when you enter a room? Not to change it yet — just to see it."',
@@ -634,7 +634,7 @@ const topics = [
     num: '09',
     title: 'Loss Aversion — Why People Fear Losing More Than They Desire Winning',
     hook: '"Never tell someone what they will gain. Tell them what they will lose if they do not act."',
-    surprisingFact: 'PGA Tour research: professional golfers putt measurably more accurately on par putts (trying to avoid a bogey) than on birdie putts (trying to gain a stroke). Same distance. Same green. Same player. Loss aversion alone changed their performance — and was estimated to cost the average tour professional $1.2 million per season in missed birdie opportunities.',
+    surprisingFact: 'Pope & Schweitzer (2011), published in the American Economic Review, studied over 2.5 million putts on the PGA Tour. Golfers made par putts (avoiding a bogey — a loss) significantly more often than birdie putts (gaining a stroke — a gain) of equivalent difficulty. Same distance. Same green. Same player. The only variable was whether the putt was framed as avoiding loss or achieving gain. Loss aversion measurably changed elite professional performance.',
     oneLiner: 'Kahneman and Tversky\'s Prospect Theory demonstrated that losses are felt neurologically 2 to 2.5 times more intensely than equivalent gains. Understanding this transforms how you communicate, negotiate, and understand your own decisions.',
     concept: [
       'In 1979, Daniel Kahneman and Amos Tversky published Prospect Theory — one of the most cited papers in economics — which described how human beings actually evaluate outcomes, as opposed to how rational actor models assumed we should. The central finding: people do not evaluate gains and losses symmetrically. A loss of $100 is not felt equally to a gain of $100. The loss hurts approximately twice as much.',
@@ -678,7 +678,7 @@ const topics = [
     num: '10',
     title: 'The 90-Minute Attention Window — Working With Your Brain\'s Natural Rhythm',
     hook: '"Working for 3 hours straight is not productive. It is expensive — and your brain is sending you the invoice."',
-    surprisingFact: 'Anders Ericsson\'s famous study of elite violinists at the Berlin Academy found the best performers practiced in exactly two 90-minute sessions per day — never more. When asked why not a third session, the consistent answer was: "It felt like going through the motions." Their physiology knew the limit before their conscious minds did. The hours on the instrument were identical to lesser students. The structure of rest was not.',
+    surprisingFact: 'Ericsson\'s 1993 study of elite violinists (Psychological Review, vol. 100) found that the best performers slept significantly more than less accomplished players — averaging 8.6 hours per night plus regular afternoon naps. While everyone assumed the elite practiced more total hours, what separated them was the quality of rest surrounding their focused sessions. The top performers treated rest as load-bearing, not optional. They did not just practice more deliberately — they recovered more deliberately.',
     oneLiner: 'Peretz Lavie\'s research on ultradian rhythms shows the brain naturally cycles through approximately 90 minutes of focused processing followed by a consolidation phase. Working past this window accumulates cognitive debt, not output.',
     concept: [
       'The 90-minute rhythm was first noticed in sleep. In the 1950s, Nathaniel Kleitman — the researcher who discovered REM sleep — observed that sleep organises itself into roughly 90-minute cycles (from light sleep through deep sleep and REM). He proposed that a similar Basic Rest-Activity Cycle (BRAC) might operate during waking hours too.',
