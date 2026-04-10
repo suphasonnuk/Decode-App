@@ -29,6 +29,7 @@ const AchievementPopup = lazy(() => import('./components/AchievementPopup'))
 const ChallengePopup   = lazy(() => import('./components/ChallengePopup'))
 const FriendsPanel     = lazy(() => import('./components/FriendsPanel'))
 const QuickLog         = lazy(() => import('./components/QuickLog'))
+const Anchors          = lazy(() => import('./components/Anchors'))
 
 type AppTab = Tab
 
@@ -386,6 +387,7 @@ function AppInner() {
               onExportView={() => handleTabChange('dashboard')}
             />}
             {/* Secondary views — accessible via Home cards or More menu */}
+            {tab === 'anchors'   && <Anchors onSaved={() => showToast('Anchors saved ✓')} />}
             {tab === 'trends'    && <Trends />}
             {tab === 'coach'     && <Coach />}
             {tab === 'nutrition' && <Nutrition key={dayKey} onToast={showToast} onTabChange={t => handleTabChange(t as AppTab)} />}
